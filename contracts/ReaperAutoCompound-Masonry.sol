@@ -25,7 +25,6 @@ abstract contract Context {
 
 // File: @openzeppelin/contracts/access/Ownable.sol
 
-
 pragma solidity ^0.6.0;
 
 /**
@@ -43,12 +42,15 @@ pragma solidity ^0.6.0;
 contract Ownable is Context {
     address private _owner;
 
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
 
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
-    constructor () internal {
+    constructor() internal {
         address msgSender = _msgSender();
         _owner = msgSender;
         emit OwnershipTransferred(address(0), msgSender);
@@ -86,14 +88,16 @@ contract Ownable is Context {
      * Can only be called by the current owner.
      */
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        require(
+            newOwner != address(0),
+            "Ownable: new owner is the zero address"
+        );
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
 }
 
 // File: @openzeppelin/contracts/token/ERC20/IERC20.sol
-
 
 pragma solidity ^0.6.0;
 
@@ -118,7 +122,9 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transfer(address recipient, uint256 amount)
+        external
+        returns (bool);
 
     /**
      * @dev Returns the remaining number of tokens that `spender` will be
@@ -127,7 +133,10 @@ interface IERC20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender) external view returns (uint256);
+    function allowance(address owner, address spender)
+        external
+        view
+        returns (uint256);
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -154,7 +163,11 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
 
     /**
      * @dev Emitted when `value` tokens are moved from one account (`from`) to
@@ -168,11 +181,14 @@ interface IERC20 {
      * @dev Emitted when the allowance of a `spender` for an `owner` is set by
      * a call to {approve}. `value` is the new allowance.
      */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 }
 
 // File: @openzeppelin/contracts/math/SafeMath.sol
-
 
 pragma solidity ^0.6.0;
 
@@ -231,7 +247,11 @@ library SafeMath {
      *
      * - Subtraction cannot overflow.
      */
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function sub(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         require(b <= a, errorMessage);
         uint256 c = a - b;
 
@@ -290,7 +310,11 @@ library SafeMath {
      *
      * - The divisor cannot be zero.
      */
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function div(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         require(b > 0, errorMessage);
         uint256 c = a / b;
         // assert(a == b * c + a % b); // There is no case in which this doesn't hold
@@ -326,14 +350,17 @@ library SafeMath {
      *
      * - The divisor cannot be zero.
      */
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function mod(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         require(b != 0, errorMessage);
         return a % b;
     }
 }
 
 // File: @openzeppelin/contracts/utils/Address.sol
-
 
 pragma solidity ^0.6.2;
 
@@ -365,7 +392,9 @@ library Address {
 
         uint256 size;
         // solhint-disable-next-line no-inline-assembly
-        assembly { size := extcodesize(account) }
+        assembly {
+            size := extcodesize(account)
+        }
         return size > 0;
     }
 
@@ -386,11 +415,17 @@ library Address {
      * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
      */
     function sendValue(address payable recipient, uint256 amount) internal {
-        require(address(this).balance >= amount, "Address: insufficient balance");
+        require(
+            address(this).balance >= amount,
+            "Address: insufficient balance"
+        );
 
         // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success, ) = recipient.call{ value: amount }("");
-        require(success, "Address: unable to send value, recipient may have reverted");
+        (bool success, ) = recipient.call{value: amount}("");
+        require(
+            success,
+            "Address: unable to send value, recipient may have reverted"
+        );
     }
 
     /**
@@ -411,8 +446,11 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+    function functionCall(address target, bytes memory data)
+        internal
+        returns (bytes memory)
+    {
+        return functionCall(target, data, "Address: low-level call failed");
     }
 
     /**
@@ -421,7 +459,11 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+    function functionCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
         return _functionCallWithValue(target, data, 0, errorMessage);
     }
 
@@ -436,8 +478,18 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
-        return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value
+    ) internal returns (bytes memory) {
+        return
+            functionCallWithValue(
+                target,
+                data,
+                value,
+                "Address: low-level call with value failed"
+            );
     }
 
     /**
@@ -446,16 +498,31 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
-        require(address(this).balance >= value, "Address: insufficient balance for call");
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
+        require(
+            address(this).balance >= value,
+            "Address: insufficient balance for call"
+        );
         return _functionCallWithValue(target, data, value, errorMessage);
     }
 
-    function _functionCallWithValue(address target, bytes memory data, uint256 weiValue, string memory errorMessage) private returns (bytes memory) {
+    function _functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 weiValue,
+        string memory errorMessage
+    ) private returns (bytes memory) {
         require(isContract(target), "Address: call to non-contract");
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
+        (bool success, bytes memory returndata) = target.call{value: weiValue}(
+            data
+        );
         if (success) {
             return returndata;
         } else {
@@ -477,12 +544,7 @@ library Address {
 
 // File: @openzeppelin/contracts/token/ERC20/ERC20.sol
 
-
 pragma solidity ^0.6.0;
-
-
-
-
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -512,9 +574,9 @@ contract ERC20 is Context, IERC20 {
     using SafeMath for uint256;
     using Address for address;
 
-    mapping (address => uint256) private _balances;
+    mapping(address => uint256) private _balances;
 
-    mapping (address => mapping (address => uint256)) private _allowances;
+    mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
 
@@ -531,7 +593,7 @@ contract ERC20 is Context, IERC20 {
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor (string memory name, string memory symbol) public {
+    constructor(string memory name, string memory symbol) public {
         _name = name;
         _symbol = symbol;
         _decimals = 18;
@@ -591,7 +653,12 @@ contract ERC20 is Context, IERC20 {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+    function transfer(address recipient, uint256 amount)
+        public
+        virtual
+        override
+        returns (bool)
+    {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -599,7 +666,13 @@ contract ERC20 is Context, IERC20 {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public view virtual override returns (uint256) {
+    function allowance(address owner, address spender)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
         return _allowances[owner][spender];
     }
 
@@ -610,7 +683,12 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) public virtual override returns (bool) {
+    function approve(address spender, uint256 amount)
+        public
+        virtual
+        override
+        returns (bool)
+    {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -627,9 +705,20 @@ contract ERC20 is Context, IERC20 {
      * - the caller must have allowance for ``sender``'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
-        _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        _approve(
+            sender,
+            _msgSender(),
+            _allowances[sender][_msgSender()].sub(
+                amount,
+                "ERC20: transfer amount exceeds allowance"
+            )
+        );
         return true;
     }
 
@@ -645,8 +734,16 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
+    function increaseAllowance(address spender, uint256 addedValue)
+        public
+        virtual
+        returns (bool)
+    {
+        _approve(
+            _msgSender(),
+            spender,
+            _allowances[_msgSender()][spender].add(addedValue)
+        );
         return true;
     }
 
@@ -664,8 +761,19 @@ contract ERC20 is Context, IERC20 {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "ERC20: decreased allowance below zero"));
+    function decreaseAllowance(address spender, uint256 subtractedValue)
+        public
+        virtual
+        returns (bool)
+    {
+        _approve(
+            _msgSender(),
+            spender,
+            _allowances[_msgSender()][spender].sub(
+                subtractedValue,
+                "ERC20: decreased allowance below zero"
+            )
+        );
         return true;
     }
 
@@ -683,13 +791,20 @@ contract ERC20 is Context, IERC20 {
      * - `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      */
-    function _transfer(address sender, address recipient, uint256 amount) internal virtual {
+    function _transfer(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal virtual {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        _balances[sender] = _balances[sender].sub(
+            amount,
+            "ERC20: transfer amount exceeds balance"
+        );
         _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
     }
@@ -729,7 +844,10 @@ contract ERC20 is Context, IERC20 {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
+        _balances[account] = _balances[account].sub(
+            amount,
+            "ERC20: burn amount exceeds balance"
+        );
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
     }
@@ -747,7 +865,11 @@ contract ERC20 is Context, IERC20 {
      * - `owner` cannot be the zero address.
      * - `spender` cannot be the zero address.
      */
-    function _approve(address owner, address spender, uint256 amount) internal virtual {
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
@@ -780,16 +902,16 @@ contract ERC20 is Context, IERC20 {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual { }
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
 }
 
 // File: @openzeppelin/contracts/token/ERC20/SafeERC20.sol
 
-
 pragma solidity ^0.6.0;
-
-
-
 
 /**
  * @title SafeERC20
@@ -804,12 +926,27 @@ library SafeERC20 {
     using SafeMath for uint256;
     using Address for address;
 
-    function safeTransfer(IERC20 token, address to, uint256 value) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
+    function safeTransfer(
+        IERC20 token,
+        address to,
+        uint256 value
+    ) internal {
+        _callOptionalReturn(
+            token,
+            abi.encodeWithSelector(token.transfer.selector, to, value)
+        );
     }
 
-    function safeTransferFrom(IERC20 token, address from, address to, uint256 value) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
+    function safeTransferFrom(
+        IERC20 token,
+        address from,
+        address to,
+        uint256 value
+    ) internal {
+        _callOptionalReturn(
+            token,
+            abi.encodeWithSelector(token.transferFrom.selector, from, to, value)
+        );
     }
 
     /**
@@ -819,25 +956,60 @@ library SafeERC20 {
      * Whenever possible, use {safeIncreaseAllowance} and
      * {safeDecreaseAllowance} instead.
      */
-    function safeApprove(IERC20 token, address spender, uint256 value) internal {
+    function safeApprove(
+        IERC20 token,
+        address spender,
+        uint256 value
+    ) internal {
         // safeApprove should only be called when setting an initial allowance,
         // or when resetting it to zero. To increase and decrease it, use
         // 'safeIncreaseAllowance' and 'safeDecreaseAllowance'
         // solhint-disable-next-line max-line-length
-        require((value == 0) || (token.allowance(address(this), spender) == 0),
+        require(
+            (value == 0) || (token.allowance(address(this), spender) == 0),
             "SafeERC20: approve from non-zero to non-zero allowance"
         );
-        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
+        _callOptionalReturn(
+            token,
+            abi.encodeWithSelector(token.approve.selector, spender, value)
+        );
     }
 
-    function safeIncreaseAllowance(IERC20 token, address spender, uint256 value) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).add(value);
-        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    function safeIncreaseAllowance(
+        IERC20 token,
+        address spender,
+        uint256 value
+    ) internal {
+        uint256 newAllowance = token.allowance(address(this), spender).add(
+            value
+        );
+        _callOptionalReturn(
+            token,
+            abi.encodeWithSelector(
+                token.approve.selector,
+                spender,
+                newAllowance
+            )
+        );
     }
 
-    function safeDecreaseAllowance(IERC20 token, address spender, uint256 value) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).sub(value, "SafeERC20: decreased allowance below zero");
-        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    function safeDecreaseAllowance(
+        IERC20 token,
+        address spender,
+        uint256 value
+    ) internal {
+        uint256 newAllowance = token.allowance(address(this), spender).sub(
+            value,
+            "SafeERC20: decreased allowance below zero"
+        );
+        _callOptionalReturn(
+            token,
+            abi.encodeWithSelector(
+                token.approve.selector,
+                spender,
+                newAllowance
+            )
+        );
     }
 
     /**
@@ -851,19 +1023,24 @@ library SafeERC20 {
         // we're implementing it ourselves. We use {Address.functionCall} to perform this call, which verifies that
         // the target address contains contract code and also asserts for success in the low-level call.
 
-        bytes memory returndata = address(token).functionCall(data, "SafeERC20: low-level call failed");
-        if (returndata.length > 0) { // Return data is optional
+        bytes memory returndata = address(token).functionCall(
+            data,
+            "SafeERC20: low-level call failed"
+        );
+        if (returndata.length > 0) {
+            // Return data is optional
             // solhint-disable-next-line max-line-length
-            require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
+            require(
+                abi.decode(returndata, (bool)),
+                "SafeERC20: ERC20 operation did not succeed"
+            );
         }
     }
 }
 
 // File: @openzeppelin/contracts/utils/Pausable.sol
 
-
 pragma solidity ^0.6.0;
-
 
 /**
  * @dev Contract module which allows children to implement an emergency stop
@@ -890,7 +1067,7 @@ contract Pausable is Context {
     /**
      * @dev Initializes the contract in unpaused state.
      */
-    constructor () internal {
+    constructor() internal {
         _paused = false;
     }
 
@@ -956,58 +1133,77 @@ interface IUniswapRouterETH {
     function addLiquidity(
         address tokenA,
         address tokenB,
-        uint amountADesired,
-        uint amountBDesired,
-        uint amountAMin,
-        uint amountBMin,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin,
         address to,
-        uint deadline
-    ) external returns (uint amountA, uint amountB, uint liquidity);
+        uint256 deadline
+    )
+        external
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        );
 
     function addLiquidityETH(
         address token,
-        uint amountTokenDesired,
-        uint amountTokenMin,
-        uint amountETHMin,
+        uint256 amountTokenDesired,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
         address to,
-        uint deadline
-    ) external payable returns (uint amountToken, uint amountETH, uint liquidity);
+        uint256 deadline
+    )
+        external
+        payable
+        returns (
+            uint256 amountToken,
+            uint256 amountETH,
+            uint256 liquidity
+        );
 
     function removeLiquidity(
         address tokenA,
         address tokenB,
-        uint liquidity,
-        uint amountAMin,
-        uint amountBMin,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin,
         address to,
-        uint deadline
-    ) external returns (uint amountA, uint amountB);
+        uint256 deadline
+    ) external returns (uint256 amountA, uint256 amountB);
 
     function removeLiquidityETH(
         address token,
-        uint liquidity,
-        uint amountTokenMin,
-        uint amountETHMin,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
         address to,
-        uint deadline
-    ) external returns (uint amountToken, uint amountETH);
+        uint256 deadline
+    ) external returns (uint256 amountToken, uint256 amountETH);
 
     function swapExactTokensForTokens(
-        uint amountIn,
-        uint amountOutMin,
+        uint256 amountIn,
+        uint256 amountOutMin,
         address[] calldata path,
         address to,
-        uint deadline
-    ) external returns (uint[] memory amounts);
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
 
-    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
-        external
-        payable
-        returns (uint[] memory amounts);
+    function swapExactETHForTokens(
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external payable returns (uint256[] memory amounts);
 
-    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
-        external
-        returns (uint[] memory amounts);
+    function swapExactTokensForETH(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
 
     function swapExactTokensForTokensSupportingFeeOnTransferTokens(
         uint256 amountIn,
@@ -1022,6 +1218,7 @@ pragma solidity ^0.6.0;
 
 interface IUniswapV2Pair {
     function token0() external view returns (address);
+
     function token1() external view returns (address);
 }
 
@@ -1030,22 +1227,53 @@ pragma solidity ^0.6.0;
 //Should be able to delete this
 interface IMasterChef {
     function poolLength() external view returns (uint256);
+
     function setBooPerSecond(uint256 _rewardTokenPerSecond) external;
-    function getMultiplier(uint256 _from, uint256 _to) external view returns (uint256);
-    function pendingBOO(uint256 _pid, address _user) external view returns (uint256);
+
+    function getMultiplier(uint256 _from, uint256 _to)
+        external
+        view
+        returns (uint256);
+
+    function pendingBOO(uint256 _pid, address _user)
+        external
+        view
+        returns (uint256);
+
     function massUpdatePools() external;
+
     function updatePool(uint256 _pid) external;
+
     function deposit(uint256 _pid, uint256 _amount) external;
+
     function withdraw(uint256 _pid, uint256 _amount) external;
-    function userInfo(uint256 _pid, address _user) external view returns (uint256, uint256);
+
+    function userInfo(uint256 _pid, address _user)
+        external
+        view
+        returns (uint256, uint256);
+
     function emergencyWithdraw(uint256 _pid) external;
 }
 
 interface IMasonry {
     function stake(uint256 _amount) external;
+
     function withdraw(uint256 _amount) external;
+
     function claimReward() external;
+
     function exit() external; //Could end up being useful if the masonry is deactivated, or other unexpected reasons
+
+    function balanceOf() external view returns (uint256);
+
+    function canClaimReward(address user) external view returns (bool);
+
+    function canWithdraw(address user) external view returns (bool);
+
+    function earned(address user) external view returns (uint256);
+
+    function epoch() external view returns (uint256);
 }
 
 pragma solidity ^0.6.0;
@@ -1073,18 +1301,22 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {lpToken0, lpToken1} - Tokens that the strategy maximizes. IUniswapV2Pair tokens.
      */
     address public wftm = address(0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83);
-    address public rewardToken = address(0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7); //TOMB
-    address public stakedToken = address(0x4cdF39285D7Ca8eB3f090fDA0C069ba5F4145B37); //TSHARE
+    address public rewardToken =
+        address(0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7); //TOMB
+    address public stakedToken =
+        address(0x4cdF39285D7Ca8eB3f090fDA0C069ba5F4145B37); //TSHARE
 
     /**
      * @dev Third Party Contracts:
      * {uniRouter} - the uniRouter for target DEX
      * {masonry} - masonry contract
-     * {shardedVaults} - vaults the strategy cycles through to allow withdrawals every epoch (up to the current shardedVault's supply + w/e is in the deposit queue)
+     * {masons} - vaults the strategy cycles through to allow withdrawals every epoch (up to the current mason's supply + w/e is in the deposit queue)
      */
-    address public uniRouter = address(0xF491e7B69E4244ad4002BC14e878a34207E38c29);
-    address public masonry = address(0x2b2929E785374c651a81A63878Ab22742656DcDd); //Masonnry - will probably need to change all related functions
-    address[] public shardedVaults; //suite of contracts that will actually interact with the masonry
+    address public uniRouter =
+        address(0xF491e7B69E4244ad4002BC14e878a34207E38c29);
+    address public masonry =
+        address(0x2b2929E785374c651a81A63878Ab22742656DcDd); //Masonnry - will probably need to change all related functions
+    address[] public masons; //suite of contracts that will actually interact with the masonry
 
     /**
      * @dev Reaper Contracts:
@@ -1094,7 +1326,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     address public treasury;
     address public vault;
 
-     /**
+    /**
      * @dev Distribution of fees earned. This allocations relative to the % implemented on
      * Current implementation separates 5% for fees. Can be changed through the constructor
      * Inputs in constructor should be ratios between the Fee and Max Fee, divisble into percents by 10000
@@ -1111,12 +1343,12 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {PERCENT_DIVISOR} - Constant used to safely calculate the correct percentages.
      */
 
-    uint public callFee = 1000;
-    uint public treasuryFee = 9000;
-    uint public securityFee = 10;
-    uint public totalFee = 450;
-    uint constant public MAX_FEE = 500;
-    uint constant  public PERCENT_DIVISOR = 10000;
+    uint256 public callFee = 1000;
+    uint256 public treasuryFee = 9000;
+    uint256 public securityFee = 10;
+    uint256 public totalFee = 450;
+    uint256 public constant MAX_FEE = 500;
+    uint256 public constant PERCENT_DIVISOR = 10000;
 
     /**
      * @dev Routes we take to swap tokens using PanrewardTokenSwap.
@@ -1126,7 +1358,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {rewardTokenToLp1Route} - Route we take to get from {rewardToken} into {lpToken1}.
      */
     address[] public rewardTokenToWftmRoute = [rewardToken, wftm];
-    address[] public rewardTokenToStakedTokenRoute = [rewardToken, wftm, stakedToken]
+    address[] public rewardTokenToStakedTokenRoute = [
+        rewardToken,
+        wftm,
+        stakedToken
+    ];
 
     /**
      * {StratHarvest} Event that is fired each time someone harvests the strat.
@@ -1134,17 +1370,14 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {CallFeeUpdated} Event that is fired each time the call fee is updated.
      */
     event StratHarvest(address indexed harvester);
-    event TotalFeeUpdated(uint newFee);
-    event CallFeeUpdated(uint newCallFee, uint newTreasuryFee);
+    event TotalFeeUpdated(uint256 newFee);
+    event CallFeeUpdated(uint256 newCallFee, uint256 newTreasuryFee);
 
     /**
      * @dev Initializes the strategy. Sets parameters, saves routes, and gives allowances.
      * @notice see documentation for each variable above its respective declaration.
      */
-    constructor (
-      address _vault,
-      address _treasury
-    ) public {
+    constructor(address _vault, address _treasury) public {
         vault = _vault;
         treasury = _treasury;
 
@@ -1156,12 +1389,12 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * It gets called whenever someone deposits in the strategy's vault contract.
      * It deposits {stakedToken} in the masonry to farm {rewardToken}
      */
-    function deposit() public whenNotPaused { //TODO
-        uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
-
-        if (pairBal > 0) {
-            IMasterChef(masonry).deposit(poolId, pairBal); //TODO change from MASTERCHEF func to MASONRY
-        }
+    function deposit() public whenNotPaused {
+        //TODO
+        // uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
+        // if (pairBal > 0) {
+        //     IMasterChef(masonry).deposit(poolId, pairBal); //TODO change from MASTERCHEF func to MASONRY
+        // }
     }
 
     /**
@@ -1169,21 +1402,19 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * It withdraws {lpPair} from the masonry.
      * The available {lpPair} minus fees is returned to the vault.
      */
-    function withdraw(uint256 _amount) external {//TODO
-        require(_msgSender() == vault, "!vault");
-
-        uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
-
-        if (pairBal < _amount) {
-            IMasterChef(masonry).withdraw(poolId, _amount.sub(pairBal));//TODO change from MASTERCHEF call to MASONRY
-            pairBal = IERC20(lpPair).balanceOf(address(this));
-        }
-
-        if (pairBal > _amount) {
-            pairBal = _amount;
-        }
-        uint256 withdrawFee = pairBal.mul(securityFee).div(PERCENT_DIVISOR);
-        IERC20(lpPair).safeTransfer(vault, pairBal.sub(withdrawFee));
+    function withdraw(uint256 _amount) external {
+        //TODO
+        // require(_msgSender() == vault, "!vault");
+        // uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
+        // if (pairBal < _amount) {
+        //     IMasterChef(masonry).withdraw(poolId, _amount.sub(pairBal)); //TODO change from MASTERCHEF call to MASONRY
+        //     pairBal = IERC20(lpPair).balanceOf(address(this));
+        // }
+        // if (pairBal > _amount) {
+        //     pairBal = _amount;
+        // }
+        // uint256 withdrawFee = pairBal.mul(securityFee).div(PERCENT_DIVISOR);
+        // IERC20(lpPair).safeTransfer(vault, pairBal.sub(withdrawFee));
     }
 
     /**
@@ -1194,16 +1425,16 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * 4. Adds more liquidity to the pool.
      * 5. It deposits the new LP tokens.
      */
-    function harvest() external whenNotPaused {//TODO might need to delete this one, since we can't just claim&deposit
-        require(!Address.isContract(msg.sender), "!contract");
-        IMasterChef(masonry).deposit(poolId, 0);//TODO change from MASTERCHEF call to MASONRY
-        if(totalFee != 0){
-            chargeFees();
-        }
-        addLiquidity();
-        deposit();
-
-        emit StratHarvest(msg.sender);
+    function harvest() external whenNotPaused {
+        //TODO might need to delete this one, since we can't just claim&deposit
+        // require(!Address.isContract(msg.sender), "!contract");
+        // IMasterChef(masonry).deposit(poolId, 0); //TODO change from MASTERCHEF call to MASONRY
+        // if (totalFee != 0) {
+        //     chargeFees();
+        // }
+        // addLiquidity();
+        // deposit();
+        // emit StratHarvest(msg.sender);
     }
 
     /**
@@ -1212,15 +1443,27 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * as is treasuryFeeToVault
      */
     function chargeFees() internal {
-        uint256 toWftm = IERC20(rewardToken).balanceOf(address(this)).mul(totalFee).div(PERCENT_DIVISOR);
-        IUniswapRouterETH(uniRouter).swapExactTokensForTokensSupportingFeeOnTransferTokens(toWftm, 0, rewardTokenToWftmRoute, address(this), now.add(600));
+        uint256 toWftm = IERC20(rewardToken)
+            .balanceOf(address(this))
+            .mul(totalFee)
+            .div(PERCENT_DIVISOR);
+        IUniswapRouterETH(uniRouter)
+            .swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                toWftm,
+                0,
+                rewardTokenToWftmRoute,
+                address(this),
+                now.add(600)
+            );
 
         uint256 wftmBal = IERC20(wftm).balanceOf(address(this));
 
         uint256 callFeeToUser = wftmBal.mul(callFee).div(PERCENT_DIVISOR);
         IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
 
-        uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(PERCENT_DIVISOR);
+        uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(
+            PERCENT_DIVISOR
+        );
         IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
     }
 
@@ -1228,70 +1471,99 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * @dev Swaps {rewardToken} for {lpToken0}, {lpToken1} & {wftm} using SpookySwap.
      */
     function addLiquidity() internal {
-        uint256 rewardTokenHalf = IERC20(rewardToken).balanceOf(address(this)).div(2);
-
-        if (lpToken0 != rewardToken) {
-            IUniswapRouterETH(uniRouter).swapExactTokensForTokensSupportingFeeOnTransferTokens(rewardTokenHalf, 0, rewardTokenToLp0Route, address(this), now.add(600));
-        }
-
-        if (lpToken1 != rewardToken) {
-            IUniswapRouterETH(uniRouter).swapExactTokensForTokensSupportingFeeOnTransferTokens(rewardTokenHalf, 0, rewardTokenToLp1Route, address(this), now.add(600));
-        }
-        uint256 lp0Bal = IERC20(lpToken0).balanceOf(address(this));
-        uint256 lp1Bal = IERC20(lpToken1).balanceOf(address(this));
-        IUniswapRouterETH(uniRouter).addLiquidity(lpToken0, lpToken1, lp0Bal, lp1Bal, 1, 1, address(this), now.add(600));
+        // uint256 rewardTokenHalf = IERC20(rewardToken)
+        //     .balanceOf(address(this))
+        //     .div(2);
+        // if (lpToken0 != rewardToken) {
+        //     IUniswapRouterETH(uniRouter)
+        //         .swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        //             rewardTokenHalf,
+        //             0,
+        //             rewardTokenToLp0Route,
+        //             address(this),
+        //             now.add(600)
+        //         );
+        // }
+        // if (lpToken1 != rewardToken) {
+        //     IUniswapRouterETH(uniRouter)
+        //         .swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        //             rewardTokenHalf,
+        //             0,
+        //             rewardTokenToLp1Route,
+        //             address(this),
+        //             now.add(600)
+        //         );
+        // }
+        // uint256 lp0Bal = IERC20(lpToken0).balanceOf(address(this));
+        // uint256 lp1Bal = IERC20(lpToken1).balanceOf(address(this));
+        // IUniswapRouterETH(uniRouter).addLiquidity(
+        //     lpToken0,
+        //     lpToken1,
+        //     lp0Bal,
+        //     lp1Bal,
+        //     1,
+        //     1,
+        //     address(this),
+        //     now.add(600)
+        // );
     }
 
     /**
      * @dev Function to calculate the total underlaying {lpPair} held by the strat.
      * It takes into account both the funds in hand, as the funds allocated in the masonry.
      */
-    function balanceOf() public view returns (uint256) {//TODO Make sure to get the value of all shardVaults
-        return balanceOfLpPair().add(balanceOfPool());
+    function balanceOf() public view returns (uint256) {
+        //TODO Make sure to get the value of all shardVaults
+        return balanceOfTShare().add(balanceOfPool());
     }
 
     /**
-     * @dev It calculates how much {lpPair} the contract holds.
+     * @dev It calculates how much {tshare} the contract holds.
      */
-    function balanceOfLpPair() public view returns (uint256) {
-        return IERC20(lpPair).balanceOf(address(this));
+    function balanceOfTShare() public view returns (uint256) {
+        return IERC20(stakedToken).balanceOf(address(this));
     }
 
     /**
-     * @dev It calculates how much {lpPair} the strategy has allocated in the masonry
+     * @dev It calculates how much {tshare} the strategy has allocated in the masonry
      */
     function balanceOfPool() public view returns (uint256) {
-        (uint256 _amount, ) = IMasterChef(masonry).userInfo(poolId, address(this));//TODO change from MASTERCHEF call to MASONRY
-        return _amount;
+        uint256 totalPoolBalance = 0;
+        for (uint256 i = 0; i < masons.length; i++) {
+            address mason = masons[i];
+            totalPoolBalance = totalPoolBalance.add(
+                IMasonry(mason).balanceOf()
+            );
+        }
+        return totalPoolBalance;
     }
 
     /**
      * @dev Function that has to be called as part of strat migration. It sends all the available funds back to the
      * vault, ready to be migrated to the new strat.
      */
-    function retireStrat() external {//TODO can we keep a similar function in a masonry vault, subject to underlying timelock ?
-        require(msg.sender == vault, "!vault");
-
-        IMasterChef(masonry).emergencyWithdraw(poolId);//TODO change from MASTERCHEF call to MASONRY
-
-        uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
-        IERC20(lpPair).transfer(vault, pairBal);
+    function retireStrat() external {
+        //TODO can we keep a similar function in a masonry vault, subject to underlying timelock ?
+        // require(msg.sender == vault, "!vault");
+        // IMasterChef(masonry).emergencyWithdraw(poolId); //TODO change from MASTERCHEF call to MASONRY
+        // uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
+        // IERC20(lpPair).transfer(vault, pairBal);
     }
 
     /**
      * @dev Pauses deposits. Withdraws all funds from the masonry, leaving rewards behind
      */
     function panic() public onlyOwner {
-        pause();
-        IMasterChef(masonry).withdraw(poolId, balanceOfPool()); //TODO change from MASTERCHEF call to MASONRY
+        // pause();
+        // IMasterChef(masonry).withdraw(poolId, balanceOfPool()); //TODO change from MASTERCHEF call to MASONRY
     }
 
     /**
      * @dev Pauses the strat.
      */
     function pause() public onlyOwner {
-      _pause();
-      removeAllowances();
+        _pause();
+        removeAllowances();
     }
 
     /**
@@ -1321,35 +1593,47 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     /**
      * @dev updates the total fee, capped at 5%
      */
-    function updateTotalFee(uint _totalFee) external onlyOwner returns (bool) {
-      require(_totalFee <= MAX_FEE, "Fee Too High");
-      totalFee = _totalFee;
-      emit TotalFeeUpdated(totalFee);
-      return true;
+    function updateTotalFee(uint256 _totalFee)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        require(_totalFee <= MAX_FEE, "Fee Too High");
+        totalFee = _totalFee;
+        emit TotalFeeUpdated(totalFee);
+        return true;
     }
 
     /**
      * @dev updates the call fee and adjusts the treasury fee to cover the difference
      */
-    function updateCallFee(uint _callFee) external onlyOwner returns (bool) {
-      callFee = _callFee;
-      treasuryFee = PERCENT_DIVISOR.sub(callFee);
-      emit CallFeeUpdated(callFee, treasuryFee);
-      return true;
+    function updateCallFee(uint256 _callFee) external onlyOwner returns (bool) {
+        callFee = _callFee;
+        treasuryFee = PERCENT_DIVISOR.sub(callFee);
+        emit CallFeeUpdated(callFee, treasuryFee);
+        return true;
     }
 
-    function updateTreasury(address newTreasury) external onlyOwner returns (bool) {
-      treasury = newTreasury;
-      return true;
+    function updateTreasury(address newTreasury)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        treasury = newTreasury;
+        return true;
     }
 
-    function updateRoutes(uint r, address[] calldata _route) external onlyOwner returns (bool){
-        if (r == 0){
-            rewardTokenToLp0Route = _route;
-        }else if(r == 1){
-            rewardTokenToLp1Route = _route;
-        }else{
-            revert("not a valid route");
-        }
+    function updateRoutes(uint256 r, address[] calldata _route)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        // if (r == 0) {
+        //     rewardTokenToLp0Route = _route;
+        // } else if (r == 1) {
+        //     rewardTokenToLp1Route = _route;
+        // } else {
+        //     revert("not a valid route");
+        // }
     }
 }
