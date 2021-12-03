@@ -1368,6 +1368,13 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     ];
 
     /**
+    * {tokensHaveBeenWithdrawn} - Flag to prevent interacting with the masonry before the tokens have been withdrawn,
+    * as any interaction with the masonry locks the assets from withdrawal
+    */
+    bool tokensHaveBeenWithdrawn = false;
+    bool tokensCanBeDeposited = false; 
+
+    /**
      * {StratHarvest} Event that is fired each time someone harvests the strat.
      * {TotalFeeUpdated} Event that is fired each time the total fee is updated.
      * {CallFeeUpdated} Event that is fired each time the call fee is updated.
@@ -1397,29 +1404,31 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         address currentMason = masons[_getCurrentMasonIndex()];
         if (stakedTokenBal > 0) {
             IERC20(stakedToken).safeTransfer(currentMason, stakedTokenBal);
-            masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
-            IMason(currentMason).stake(masonStakedBal);
+            if (tokensCanBeDeposited){ //TODO Evaluate when we want to start staking into the masonry to change that
+                masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
+                IMason(currentMason).stake(masonStakedBal);
+            }
         }
     }
 
     /**
      * @dev Withdraws funds and sents them back to the vault.
-     * It withdraws {lpPair} from the masonry.
-     * The available {lpPair} minus fees is returned to the vault.
+     * It withdraws {stakedToken} from the masonry.
+     * The available {stakedToken} minus fees is returned to the vault.
      */
     function withdraw(uint256 _amount) external {
-        //TODO
-        // require(_msgSender() == vault, "!vault");
-        // uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
-        // if (pairBal < _amount) {
-        //     IMasterChef(masonry).withdraw(poolId, _amount.sub(pairBal)); //TODO change from MASTERCHEF call to MASONRY
-        //     pairBal = IERC20(lpPair).balanceOf(address(this));
-        // }
-        // if (pairBal > _amount) {
-        //     pairBal = _amount;
-        // }
-        // uint256 withdrawFee = pairBal.mul(securityFee).div(PERCENT_DIVISOR);
-        // IERC20(lpPair).safeTransfer(vault, pairBal.sub(withdrawFee));
+        require(_msgSender() == vault, "!vault");
+        if (!tokensHaveBeenWithdrawn) {
+            IMason(masons[_getCurrentMasonIndex()]).exit();
+            tokensHaveBeenWithdrawn = true;
+        }
+
+        uint256 withdrawableStakedToken = IERC20(stakedToken).balanceOf(masons[_getCurrentMasonIndex()]);
+        if (withdrawableStakedToken < _amount) {
+            //TODO Issue the receipt token ?
+        }
+        uint256 withdrawFee = withdrawableStakedToken.mul(securityFee).div(PERCENT_DIVISOR);
+        IERC20(stakedToken).safeTransfer(vault, withdrawableStakedToken.sub(wthdrawFee));
     }
 
     /**
