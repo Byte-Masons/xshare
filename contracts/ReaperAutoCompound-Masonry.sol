@@ -1591,6 +1591,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         return IMasonry(masonry).epoch() % 6;
     }
 
+    function setMasons(address[] memory _masons) external onlyOwner {
+        require(_masons.length == 6, "masons.length != 6");
+        masons = _masons;
+    }
+
     /**
      * @dev Function that has to be called as part of strat migration. It sends all the available funds back to the
      * vault, ready to be migrated to the new strat.
