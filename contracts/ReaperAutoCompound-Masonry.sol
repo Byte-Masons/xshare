@@ -1390,11 +1390,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * It deposits {stakedToken} in the masonry to farm {rewardToken}
      */
     function deposit() public whenNotPaused {
-        //TODO
-        // uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
-        // if (pairBal > 0) {
-        //     IMasterChef(masonry).deposit(poolId, pairBal); //TODO change from MASTERCHEF func to MASONRY
-        // }
+        uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+        if (stakedTokenBal > 0) {
+            IMasonry(masons[_getCurrentMasonIndex]).stake(stakedTokenBal);
+        }
     }
 
     /**
