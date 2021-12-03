@@ -1420,7 +1420,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         treasury = _treasury;
         masons = _masons;
 
-        giveAllowances();
+        _giveAllowances();
     }
 
     /**
@@ -1495,7 +1495,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * callFeeToUser is set as a percentage of the fee,
      * as is treasuryFeeToVault
      */
-    function chargeFees() internal {
+    function _chargeFees() internal {
         uint256 toWftm = IERC20(rewardToken)
             .balanceOf(address(this))
             .mul(totalFee)
@@ -1523,7 +1523,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     /**
      * @dev Swaps {rewardToken} for {stakedToken} using SpookySwap.
      */
-    function addLiquidity() internal {
+    function _addLiquidity() internal {
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
         IUniswapRouterETH(uniRouter)
             .swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -1609,7 +1609,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     function pause() public onlyOwner {
         _pause();
-        removeAllowances();
+        _removeAllowances();
     }
 
     /**
@@ -1618,20 +1618,17 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     function unpause() external onlyOwner {
         _unpause();
 
-        giveAllowances();
+        _giveAllowances();
 
         deposit();
     }
 
-    function giveAllowances() internal {
-        IERC20(stakedToken).safeApprove(masonry, 0);
-        IERC20(stakedToken).safeApprove(masonry, uint256(-1));
-
+    function _giveAllowances() internal {
         IERC20(rewardToken).safeApprove(uniRouter, 0);
         IERC20(rewardToken).safeApprove(uniRouter, uint256(-1));
     }
 
-    function removeAllowances() internal {
+    function _removeAllowances() internal {
         IERC20(stakedToken).safeApprove(masonry, 0);
         IERC20(rewardToken).safeApprove(uniRouter, 0);
     }
@@ -1669,17 +1666,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         return true;
     }
 
-    function updateRoutes(uint256 r, address[] calldata _route)
+    function updateRoute(address[] calldata _route)
         external
         onlyOwner
         returns (bool)
     {
-        // if (r == 0) {
-        //     rewardTokenToLp0Route = _route;
-        // } else if (r == 1) {
-        //     rewardTokenToLp1Route = _route;
-        // } else {
-        //     revert("not a valid route");
-        // }
+        rewardTokenToStakedTokenRoute = _route;
     }
 }
