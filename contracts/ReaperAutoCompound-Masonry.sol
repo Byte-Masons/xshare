@@ -1256,6 +1256,26 @@ interface IMasterChef {
     function emergencyWithdraw(uint256 _pid) external;
 }
 
+interface IMasonry {
+    function stake(uint256 _amount) external;
+
+    function withdraw(uint256 _amount) external;
+
+    function claimReward() external;
+
+    function exit() external; //Could end up being useful if the masonry is deactivated, or other unexpected reasons
+
+    function balanceOf(address user) external view returns (uint256);
+
+    function canClaimReward(address user) external view returns (bool);
+
+    function canWithdraw(address user) external view returns (bool);
+
+    function earned(address user) external view returns (uint256);
+
+    function epoch() external view returns (uint256);
+}
+
 /**
  * @dev The IMason wraps the IMasonry but does not need the address user parameter
  */
@@ -1318,7 +1338,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     address public uniRouter =
         address(0xF491e7B69E4244ad4002BC14e878a34207E38c29);
     address public masonry =
-        address(0x2b2929E785374c651a81A63878Ab22742656DcDd); //Masonnry - will probably need to change all related functions
+        address(0x8764DE60236C5843D9faEB1B638fbCE962773B67); //Masonnry - will probably need to change all related functions
     address[] public masons; //suite of contracts that will actually interact with the masonry
 
     /**
@@ -1368,11 +1388,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     ];
 
     /**
-    * {tokensHaveBeenWithdrawn} - Flag to prevent interacting with the masonry before the tokens have been withdrawn,
-    * as any interaction with the masonry locks the assets from withdrawal
-    */
+     * {tokensHaveBeenWithdrawn} - Flag to prevent interacting with the masonry before the tokens have been withdrawn,
+     * as any interaction with the masonry locks the assets from withdrawal
+     */
     bool tokensHaveBeenWithdrawn = false;
-    bool tokensCanBeDeposited = false; 
+    bool tokensCanBeDeposited = false;
 
     /**
      * {StratHarvest} Event that is fired each time someone harvests the strat.
@@ -1404,9 +1424,12 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         address currentMason = masons[_getCurrentMasonIndex()];
         if (stakedTokenBal > 0) {
             IERC20(stakedToken).safeTransfer(currentMason, stakedTokenBal);
-            if (tokensCanBeDeposited){ //TODO Evaluate when we want to start staking into the masonry to change that
-                masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
-                IMason(currentMason).stake(masonStakedBal);
+            if (tokensCanBeDeposited) {
+                //TODO Evaluate when we want to start staking into the masonry to change that
+                // masonStakedTokenBal = IERC20(stakedToken).balanceOf(
+                //     currentMason
+                // );
+                // IMason(currentMason).stake(masonStakedBal);
             }
         }
     }
@@ -1423,12 +1446,19 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
             tokensHaveBeenWithdrawn = true;
         }
 
-        uint256 withdrawableStakedToken = IERC20(stakedToken).balanceOf(masons[_getCurrentMasonIndex()]);
+        uint256 withdrawableStakedToken = IERC20(stakedToken).balanceOf(
+            masons[_getCurrentMasonIndex()]
+        );
         if (withdrawableStakedToken < _amount) {
             //TODO Issue the receipt token ?
         }
-        uint256 withdrawFee = withdrawableStakedToken.mul(securityFee).div(PERCENT_DIVISOR);
-        IERC20(stakedToken).safeTransfer(vault, withdrawableStakedToken.sub(wthdrawFee));
+        uint256 withdrawFee = withdrawableStakedToken.mul(securityFee).div(
+            PERCENT_DIVISOR
+        );
+        IERC20(stakedToken).safeTransfer(
+            vault,
+            withdrawableStakedToken.sub(withdrawFee)
+        );
     }
 
     /**
@@ -1551,7 +1581,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     }
 
     function _getCurrentMasonIndex() internal view returns (uint256) {
-        return IMason(masonry).epoch() % 6;
+        return IMasonry(masonry).epoch() % 6;
     }
 
     /**
