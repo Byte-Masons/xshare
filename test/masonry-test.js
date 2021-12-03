@@ -39,13 +39,12 @@ describe("Vaults", function () {
     console.log("providers");
     //get signers
     [owner, addr1, addr2, addr3, addr4, ...addrs] = await ethers.getSigners();
+    const tshareWhale = "0x2ff023bb5bb52b43ba62b36c03ccdd82d90ae7c2";
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
-      params: ["0x60BC5E0440C867eEb4CbcE84bB1123fad2b262B1"],
+      params: [tshareWhale],
     });
-    self = await ethers.provider.getSigner(
-      "0x60bc5e0440c867eeb4cbce84bb1123fad2b262b1"
-    );
+    self = await ethers.provider.getSigner(tshareWhale);
     selfAddress = await self.getAddress();
     ownerAddress = await owner.getAddress();
     console.log("addresses");
@@ -64,8 +63,8 @@ describe("Vaults", function () {
 
     vault = await Vault.deploy(
       pools.tomb.stake[i].token,
-      pools.beetx.farms[i].name,
-      pools.beetx.farms[i].symbol,
+      pools.tomb.stake[i].name,
+      pools.tomb.stake[i].symbol,
       432000,
       0
     );
@@ -120,11 +119,11 @@ describe("Vaults", function () {
       const depositAmount = ethers.utils.parseEther(".1");
       console.log(i);
       await vault.connect(self).deposit(depositAmount);
-      console.log(4);
-      const newUserBalance = await tshare.balanceOf(selfAddress);
-      console.log(newUserBalance);
-      const newVaultBalance = await vault.balance();
-      console.log(newVaultBalance);
+      // console.log(4);
+      // const newUserBalance = await tshare.balanceOf(selfAddress);
+      // console.log(newUserBalance);
+      // const newVaultBalance = await vault.balance();
+      // console.log(newVaultBalance);
       //expect(newVaultBalance).to.equal(ethers.utils.parseEther(".0995"));
       //expect(newUserBalance).to.equal(userBalance - depositAmount);
     });
