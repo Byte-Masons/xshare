@@ -1407,9 +1407,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * @dev Initializes the strategy. Sets parameters, saves routes, and gives allowances.
      * @notice see documentation for each variable above its respective declaration.
      */
-    constructor(address _vault, address _treasury) public {
+    constructor(address _vault, address _treasury, address[] _masons) public {
+        require(_masons.length == 6, "_masons.length != 6");
         vault = _vault;
         treasury = _treasury;
+        masons = _masons;
 
         giveAllowances();
     }
