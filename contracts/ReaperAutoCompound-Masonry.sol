@@ -1391,8 +1391,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     function deposit() public whenNotPaused {
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+        address currentMason = masons[_getCurrentMasonIndex()];
         if (stakedTokenBal > 0) {
-            IMasonry(masons[_getCurrentMasonIndex]).stake(stakedTokenBal);
+            IERC20(stakedToken).safeTransfer(currentMason,stakedTokenBal);
+            masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
+            IMasonry(currentMason).stake(masonStakedBal);
         }
     }
 
@@ -1535,6 +1538,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
             );
         }
         return totalPoolBalance;
+    }
+
+    function _getCurrentMasonIndex() internal view returns (uint256) {
+        return IMasonry(masonry).epoch()%6;
     }
 
     /**
