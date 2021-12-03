@@ -1388,13 +1388,16 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     ];
 
     /**
+     * @dev Flags used to prevent erronous interactions with the masonry
      * {tokensHaveBeenWithdrawn} - Flag to prevent interacting with the masonry before the tokens have been withdrawn,
      * as any interaction with the masonry locks the assets from withdrawal
+     * {tokensCanBeDeposited} - Flag necessary to keep tokens in the strategy until they need to be deposited
      */
     bool tokensHaveBeenWithdrawn = false;
     bool tokensCanBeDeposited = false;
 
     /**
+     * @dev Events emitted by the contracts
      * {StratHarvest} Event that is fired each time someone harvests the strat.
      * {TotalFeeUpdated} Event that is fired each time the total fee is updated.
      * {CallFeeUpdated} Event that is fired each time the call fee is updated.
