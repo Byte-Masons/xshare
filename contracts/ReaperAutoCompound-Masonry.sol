@@ -1449,8 +1449,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     function withdraw(uint256 _amount) external {
         require(_msgSender() == vault, "!vault");
         if (!tokensHaveBeenWithdrawn) {
-            IMason(masons[_getCurrentMasonIndex()]).exit();
-            tokensHaveBeenWithdrawn = true;
+            _retrieveTokensFromMason();
         }
 
         uint256 withdrawableStakedToken = IERC20(stakedToken).balanceOf(
@@ -1589,6 +1588,18 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
 
     function _getCurrentMasonIndex() internal view returns (uint256) {
         return IMasonry(masonry).epoch() % 6;
+    }
+
+    function _retrieveTokensFromMason() internal {
+        address currentMason = masons[_getCurrentMasonIndex()];
+        IMason(currentMason).exit();
+
+        uint256 masonStakedToken = IERC20(stakedToken).balanceOf(currentMason);
+        uint256 masonRewardToken = IERC20(rewardToken).balanceOf(currentMason);
+        IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
+        IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
+
+        tokensHaveBeenWithdrawn = true;
     }
 
     function setMasons(address[] memory _masons) external onlyOwner {
