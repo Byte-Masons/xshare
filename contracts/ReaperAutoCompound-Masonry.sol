@@ -1297,6 +1297,8 @@ interface IMason {
     function earned() external view returns (uint256);
 
     function epoch() external view returns (uint256);
+
+    function nextEpochPoint() external view returns (uint256);
 }
 
 pragma solidity ^0.6.0;
@@ -1394,7 +1396,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {tokensCanBeDeposited} - Flag necessary to keep tokens in the strategy until they need to be deposited
      */
     bool tokensHaveBeenWithdrawn = false;
-    bool tokensCanBeDeposited = false;
+    uint256 depositTimeFrame = 1 hours;
 
     /**
      * @dev Events emitted by the contracts
@@ -1432,15 +1434,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         require(masons.length == 6, "The masons array must be initialized");
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         address currentMason = masons[_getCurrentMasonIndex()];
-        if (stakedTokenBal > 0) {
+        if (stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame) {
             IERC20(stakedToken).safeTransfer(currentMason, stakedTokenBal);
-            if (tokensCanBeDeposited) {
-                //TODO Evaluate when we want to start staking into the masonry to change that
-                // masonStakedTokenBal = IERC20(stakedToken).balanceOf(
-                //     currentMason
-                // );
-                // IMason(currentMason).stake(masonStakedBal);
-            }
+            uint256 masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
+            IMason(currentMason).stake(masonStakedTokenBal);
         }
     }
 

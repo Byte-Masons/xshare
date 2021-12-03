@@ -20,6 +20,8 @@ interface IMasonry {
     function earned(address user) external view returns (uint256);
 
     function epoch() external view returns (uint256);
+
+    function nextEpochPoint() external view returns (uint256);
 }
 
 /**
@@ -43,6 +45,8 @@ interface IMason {
     function earned() external view returns (uint256);
 
     function epoch() external view returns (uint256);
+
+    function nextEpochPoint() external view returns (uint256);
 }
 
 /**
@@ -87,5 +91,9 @@ contract Mason is IMason {
 
     function epoch() external view override returns (uint256) {
         return IMasonry(masonry).epoch();
+    }
+
+    function nextEpochPoint() external view override returns (uint256) {
+        return IMasonry(masonry).nextEpochPoint();
     }
 }
