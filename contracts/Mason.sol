@@ -11,7 +11,7 @@ interface IMasonry {
 
     function exit() external; //Could end up being useful if the masonry is deactivated, or other unexpected reasons
 
-    function balanceOf() external view returns (uint256);
+    function balanceOf(address user) external view returns (uint256);
 
     function canClaimReward(address user) external view returns (bool);
 
@@ -23,10 +23,33 @@ interface IMasonry {
 }
 
 /**
+ * @dev The IMason wraps the IMasonry but does not need the address user parameter
+ */
+interface IMason {
+    function stake(uint256 _amount) external;
+
+    function withdraw(uint256 _amount) external;
+
+    function claimReward() external;
+
+    function exit() external; //Could end up being useful if the masonry is deactivated, or other unexpected reasons
+
+    function balanceOf() external view returns (uint256);
+
+    function canClaimReward() external view returns (bool);
+
+    function canWithdraw() external view returns (bool);
+
+    function earned() external view returns (uint256);
+
+    function epoch() external view returns (uint256);
+}
+
+/**
  * @dev A wrapper for the tomb Masonry contract that allows the strategy to have multiple
  * Masons, and therefore multiple separate timelocks in a rotation.
  */
-contract Mason is IMasonry {
+contract Mason is IMason {
     address public masonry =
         address(0x2b2929E785374c651a81A63878Ab22742656DcDd); // The tomb Masonry contract
 
@@ -47,24 +70,19 @@ contract Mason is IMasonry {
     }
 
     function balanceOf() external view override returns (uint256) {
-        // balanceOf differs, probably need different interfaces
+        return IMasonry(masonry).balanceOf(address(this));
     }
 
-    function canClaimReward(address user)
-        external
-        view
-        override
-        returns (bool)
-    {
-        return IMasonry(masonry).canClaimReward(user);
+    function canClaimReward() external view override returns (bool) {
+        return IMasonry(masonry).canClaimReward(address(this));
     }
 
-    function canWithdraw(address user) external view override returns (bool) {
-        return IMasonry(masonry).canWithdraw(user);
+    function canWithdraw() external view override returns (bool) {
+        return IMasonry(masonry).canWithdraw(address(this));
     }
 
-    function earned(address user) external view override returns (uint256) {
-        return IMasonry(masonry).earned(user);
+    function earned() external view override returns (uint256) {
+        return IMasonry(masonry).earned(address(this));
     }
 
     function epoch() external view override returns (uint256) {

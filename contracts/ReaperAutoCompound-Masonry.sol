@@ -1256,7 +1256,10 @@ interface IMasterChef {
     function emergencyWithdraw(uint256 _pid) external;
 }
 
-interface IMasonry {
+/**
+ * @dev The IMason wraps the IMasonry but does not need the address user parameter
+ */
+interface IMason {
     function stake(uint256 _amount) external;
 
     function withdraw(uint256 _amount) external;
@@ -1267,11 +1270,11 @@ interface IMasonry {
 
     function balanceOf() external view returns (uint256);
 
-    function canClaimReward(address user) external view returns (bool);
+    function canClaimReward() external view returns (bool);
 
-    function canWithdraw(address user) external view returns (bool);
+    function canWithdraw() external view returns (bool);
 
-    function earned(address user) external view returns (uint256);
+    function earned() external view returns (uint256);
 
     function epoch() external view returns (uint256);
 }
@@ -1392,7 +1395,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     function deposit() public whenNotPaused {
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         if (stakedTokenBal > 0) {
-            IMasonry(masons[_getCurrentMasonIndex]).stake(stakedTokenBal);
+            IMason(masons[_getCurrentMasonIndex]).stake(stakedTokenBal);
         }
     }
 
@@ -1530,9 +1533,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         uint256 totalPoolBalance = 0;
         for (uint256 i = 0; i < masons.length; i++) {
             address mason = masons[i];
-            totalPoolBalance = totalPoolBalance.add(
-                IMasonry(mason).balanceOf()
-            );
+            totalPoolBalance = totalPoolBalance.add(IMason(mason).balanceOf());
         }
         return totalPoolBalance;
     }
