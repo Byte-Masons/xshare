@@ -1521,44 +1521,18 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     }
 
     /**
-     * @dev Swaps {rewardToken} for {lpToken0}, {lpToken1} & {wftm} using SpookySwap.
+     * @dev Swaps {rewardToken} for {stakedToken} using SpookySwap.
      */
     function addLiquidity() internal {
-        // uint256 rewardTokenHalf = IERC20(rewardToken)
-        //     .balanceOf(address(this))
-        //     .div(2);
-        // if (lpToken0 != rewardToken) {
-        //     IUniswapRouterETH(uniRouter)
-        //         .swapExactTokensForTokensSupportingFeeOnTransferTokens(
-        //             rewardTokenHalf,
-        //             0,
-        //             rewardTokenToLp0Route,
-        //             address(this),
-        //             now.add(600)
-        //         );
-        // }
-        // if (lpToken1 != rewardToken) {
-        //     IUniswapRouterETH(uniRouter)
-        //         .swapExactTokensForTokensSupportingFeeOnTransferTokens(
-        //             rewardTokenHalf,
-        //             0,
-        //             rewardTokenToLp1Route,
-        //             address(this),
-        //             now.add(600)
-        //         );
-        // }
-        // uint256 lp0Bal = IERC20(lpToken0).balanceOf(address(this));
-        // uint256 lp1Bal = IERC20(lpToken1).balanceOf(address(this));
-        // IUniswapRouterETH(uniRouter).addLiquidity(
-        //     lpToken0,
-        //     lpToken1,
-        //     lp0Bal,
-        //     lp1Bal,
-        //     1,
-        //     1,
-        //     address(this),
-        //     now.add(600)
-        // );
+        uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
+        IUniswapRouterETH(uniRouter)
+            .swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                rewardTokenBal,
+                0,
+                rewardTokenToStakedTokenRoute,
+                address(this),
+                now.add(60)
+            );
     }
 
     /**
