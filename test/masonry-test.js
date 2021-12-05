@@ -41,12 +41,12 @@ describe("Vaults", function () {
     console.log("providers");
     //get signers
     [owner, addr1, addr2, addr3, addr4, ...addrs] = await ethers.getSigners();
-    const tshareWhale = "0x2ff023bb5bb52b43ba62b36c03ccdd82d90ae7c2";
+    const tshareHolder = "0xe739b43f46e3efee99ff698123110b4da4657b2b";
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
-      params: [tshareWhale],
+      params: [tshareHolder],
     });
-    self = await ethers.provider.getSigner(tshareWhale);
+    self = await ethers.provider.getSigner(tshareHolder);
     selfAddress = await self.getAddress();
     ownerAddress = await owner.getAddress();
     console.log("addresses");
@@ -139,7 +139,7 @@ describe("Vaults", function () {
       console.log(`userBalance: ${userBalance}`);
       const vaultBalance = await vault.balance();
       console.log(2);
-      const depositAmount = ethers.utils.parseEther(".1");
+      const depositAmount = ethers.utils.parseEther(".0001");
       console.log(i);
       await vault.connect(self).deposit(depositAmount);
       console.log(4);
@@ -160,36 +160,38 @@ describe("Vaults", function () {
       expect(newVaultBalance).to.equal(depositAmount);
       expect(deductedAmount.toString()).to.equal(depositAmount.toString());
     });
-    // it("should mint user their pool share", async function () {
-    //   const userBalance = await uniToken.balanceOf(selfAddress);
-    //   console.log(userBalance.toString());
-    //   const depositAmount = ethers.utils.parseEther("0.0000005");
-    //   await vault.connect(self).deposit(depositAmount);
-    //   console.log((await vault.balance()).toString());
-    //   console.log((await uniToken.balanceOf(selfAddress)).toString());
-    //   const selfShareBalance = await vault.balanceOf(selfAddress);
-    //   console.log(selfShareBalance.toString());
-    //   await uniToken.connect(self).transfer(ownerAddress, depositAmount);
-    //   const ownerBalance = await uniToken.balanceOf(ownerAddress);
-    //   console.log(ownerBalance.toString());
-    //   await vault.deposit(depositAmount);
-    //   const ownerShareBalance = await vault.balanceOf(ownerAddress);
-    //   console.log(ownerShareBalance.toString());
-    //   // expect(ownerShareBalance).to.equal(depositAmount);
-    //   // expect(selfShareBalance).to.equal(depositAmount);
-    // });
-    // it("should allow withdrawals", async function () {
-    //   const userBalance = await uniToken.balanceOf(selfAddress);
-    //   console.log(userBalance);
-    //   let vaultBalance = await vault.balance();
-    //   const depositAmount = ethers.utils.parseEther("1");
-    //   await vault.connect(self).deposit(depositAmount);
-    //   console.log(await uniToken.balanceOf(selfAddress));
-    //   expect(await uniToken.balanceOf(selfAddress)).to.equal(0);
-    //   await vault.connect(self).withdraw(depositAmount);
-    //   console.log(await uniToken.balanceOf(selfAddress));
-    //   //expect(await uniToken.balanceOf(selfAddress)).to.equal(ethers.utils.parseEther("1"))
-    // });
+    it("should mint user their pool share", async function () {
+      const userBalance = await tshare.balanceOf(selfAddress);
+      console.log(userBalance.toString());
+      const depositAmount = ethers.utils.parseEther("0.0000005");
+      await vault.connect(self).deposit(depositAmount);
+      console.log((await vault.balance()).toString());
+      console.log((await tshare.balanceOf(selfAddress)).toString());
+      const selfShareBalance = await vault.balanceOf(selfAddress);
+      console.log(selfShareBalance.toString());
+      await tshare.connect(self).transfer(ownerAddress, depositAmount);
+      const ownerBalance = await tshare.balanceOf(ownerAddress);
+      console.log(ownerBalance.toString());
+      await vault.deposit(depositAmount);
+      const ownerShareBalance = await vault.balanceOf(ownerAddress);
+      console.log(ownerShareBalance.toString());
+      expect(ownerShareBalance).to.equal(depositAmount);
+      expect(selfShareBalance).to.equal(depositAmount);
+    });
+    it("should allow withdrawals", async function () {
+      const userBalance = await tshare.balanceOf(selfAddress);
+      console.log(userBalance);
+      let vaultBalance = await vault.balance();
+      const depositAmount = ethers.utils.parseEther("0.0001");
+      await vault.connect(self).deposit(depositAmount);
+      console.log(await tshare.balanceOf(selfAddress));
+      const newUserBalance = userBalance - depositAmount;
+      const tokenBalance = (await tshare.balanceOf(selfAddress)).toString();
+      expect(tokenBalance).to.equal(newUserBalance.toString());
+      await vault.connect(self).withdraw(depositAmount);
+      console.log(await tshare.balanceOf(selfAddress));
+      //expect(await tshare.balanceOf(selfAddress)).to.equal(ethers.utils.parseEther("1"))
+    });
     // it("should be able to harvest", async function () {
     //   const userBalance = await uniToken.balanceOf(selfAddress);
     //   console.log(`before depositing balance is ${userBalance.toString()}`);
