@@ -152,9 +152,13 @@ describe("Vaults", function () {
       );
       const isDeductingDeposit =
         newUserBalance.toString() === (userBalance - depositAmount).toString();
+      console.log(
+        `userBalance - newUserBalance: ${userBalance - newUserBalance}`
+      );
+      const deductedAmount = userBalance - newUserBalance;
+      expect(vaultBalance).to.equal(0);
       expect(newVaultBalance).to.equal(depositAmount);
-
-      expect(isDeductingDeposit).to.equal(true);
+      expect(deductedAmount.toString()).to.equal(depositAmount.toString());
     });
     // it("should mint user their pool share", async function () {
     //   const userBalance = await uniToken.balanceOf(selfAddress);
