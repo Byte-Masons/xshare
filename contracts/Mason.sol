@@ -55,7 +55,7 @@ interface IMason {
  */
 contract Mason is IMason {
     address public masonry =
-        address(0x2b2929E785374c651a81A63878Ab22742656DcDd); // The tomb Masonry contract
+        address(0x8764DE60236C5843D9faEB1B638fbCE962773B67); // The tomb Masonry contract
 
     function stake(uint256 _amount) external override {
         IMasonry(masonry).stake(_amount);
