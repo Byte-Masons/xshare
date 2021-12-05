@@ -1448,22 +1448,19 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     function withdraw(uint256 _amount) external {
         require(_msgSender() == vault, "!vault");
-        if (!tokensHaveBeenWithdrawn) {
-            _retrieveTokensFromMason();
-        }
+        _retrieveTokensFromMason();
 
-        uint256 withdrawableStakedToken = IERC20(stakedToken).balanceOf(
-            masons[_getCurrentMasonIndex()]
-        );
-        if (withdrawableStakedToken < _amount) {
+        uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+        if (stakedTokenBal < _amount) {
             //TODO Issue the receipt token ?
         }
-        uint256 withdrawFee = withdrawableStakedToken.mul(securityFee).div(
+        stakedTokenBal = stakedTokenBal > _amount ? _amount : stakedTokenBal;
+        uint256 withdrawFee = stakedTokenBal.mul(securityFee).div(
             PERCENT_DIVISOR
         );
         IERC20(stakedToken).safeTransfer(
             vault,
-            withdrawableStakedToken.sub(withdrawFee)
+            stakedTokenBal.sub(withdrawFee)
         );
     }
 
@@ -1476,15 +1473,12 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * 5. It deposits the new LP tokens.
      */
     function harvest() external whenNotPaused {
-        //TODO might need to delete this one, since we can't just claim&deposit
-        // require(!Address.isContract(msg.sender), "!contract");
-        // IMasterChef(masonry).deposit(poolId, 0); //TODO change from MASTERCHEF call to MASONRY
-        // if (totalFee != 0) {
-        //     chargeFees();
-        // }
-        // addLiquidity();
-        // deposit();
-        // emit StratHarvest(msg.sender);
+        require(!Address.isContract(msg.sender), "!contract");
+        _retrieveTokensFromMason();
+        _chargeFees();
+        _addLiquidity();
+        deposit();
+        emit StratHarvest(_msgSender());
     }
 
     /**
@@ -1493,28 +1487,30 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * as is treasuryFeeToVault
      */
     function _chargeFees() internal {
-        uint256 toWftm = IERC20(rewardToken)
-            .balanceOf(address(this))
-            .mul(totalFee)
-            .div(PERCENT_DIVISOR);
-        IUniswapRouterETH(uniRouter)
-            .swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                toWftm,
-                0,
-                rewardTokenToWftmRoute,
-                address(this),
-                now.add(600)
+        uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
+        if(rewardTokenBal > 0 && totalFee != 0) {
+            uint256 toWftm = rewardTokenBal
+                .mul(totalFee)
+                .div(PERCENT_DIVISOR);
+            IUniswapRouterETH(uniRouter)
+                .swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    toWftm,
+                    0,
+                    rewardTokenToWftmRoute,
+                    address(this),
+                    now.add(600)
+                );
+
+            uint256 wftmBal = IERC20(wftm).balanceOf(address(this));
+
+            uint256 callFeeToUser = wftmBal.mul(callFee).div(PERCENT_DIVISOR);
+            IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
+
+            uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(
+                PERCENT_DIVISOR
             );
-
-        uint256 wftmBal = IERC20(wftm).balanceOf(address(this));
-
-        uint256 callFeeToUser = wftmBal.mul(callFee).div(PERCENT_DIVISOR);
-        IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
-
-        uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(
-            PERCENT_DIVISOR
-        );
-        IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
+            IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
+        }
     }
 
     /**
@@ -1522,14 +1518,16 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     function _addLiquidity() internal {
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
-        IUniswapRouterETH(uniRouter)
-            .swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                rewardTokenBal,
-                0,
-                rewardTokenToStakedTokenRoute,
-                address(this),
-                now.add(60)
-            );
+        if (rewardTokenBal > 0) {
+            IUniswapRouterETH(uniRouter)
+                .swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    rewardTokenBal,
+                    0,
+                    rewardTokenToStakedTokenRoute,
+                    address(this),
+                    now.add(60)
+                );
+        }
     }
 
     /**
@@ -1564,16 +1562,22 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         return IMasonry(masonry).epoch() % 6;
     }
 
+    /**
+     * @dev If not done yet in the current epoch, will retrieve all staked tokens & pending rewards from the masonry
+     * and transfer them to the strategy
+     */
     function _retrieveTokensFromMason() internal {
-        address currentMason = masons[_getCurrentMasonIndex()];
-        IMason(currentMason).exit();
+        if (!tokensHaveBeenWithdrawn) {
+            address currentMason = masons[_getCurrentMasonIndex()];
+            IMason(currentMason).exit();
 
-        uint256 masonStakedToken = IERC20(stakedToken).balanceOf(currentMason);
-        uint256 masonRewardToken = IERC20(rewardToken).balanceOf(currentMason);
-        IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
-        IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
+            uint256 masonStakedToken = IERC20(stakedToken).balanceOf(currentMason);
+            uint256 masonRewardToken = IERC20(rewardToken).balanceOf(currentMason);
+            IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
+            IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
 
-        tokensHaveBeenWithdrawn = true;
+            tokensHaveBeenWithdrawn = true;
+        }
     }
 
     function setMasons(address[] memory _masons) external onlyOwner {
