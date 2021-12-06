@@ -1448,11 +1448,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     function withdraw(uint256 _amount) external {
         require(_msgSender() == vault, "!vault");
-        _retrieveTokensFromMason();
 
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         if (stakedTokenBal < _amount) {
             //TODO Issue the receipt token ?
+        _retrieveTokensFromMason();
         }
         stakedTokenBal = stakedTokenBal > _amount ? _amount : stakedTokenBal;
         uint256 withdrawFee = stakedTokenBal.mul(securityFee).div(
