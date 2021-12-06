@@ -1572,12 +1572,20 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         _checkNewEpoch();
         if (!tokensHaveBeenWithdrawn) {
             address currentMason = masons[_getCurrentMasonIndex()];
-            IMason(currentMason).exit();
+            uint256 masonBalance = IMason(currentMason).balanceOf();
+
+            if (masonBalance > 0) {
+                IMason(currentMason).exit();
+            }
 
             uint256 masonStakedToken = IERC20(stakedToken).balanceOf(currentMason);
             uint256 masonRewardToken = IERC20(rewardToken).balanceOf(currentMason);
-            IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
-            IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
+            if (masonStakedToken > 0) {
+                IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
+            }
+            if (masonRewardToken > 0) {
+                IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
+            }
 
             tokensHaveBeenWithdrawn = true;
         }
