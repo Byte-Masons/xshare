@@ -1396,6 +1396,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {tokensCanBeDeposited} - Flag necessary to keep tokens in the strategy until they need to be deposited
      */
     bool tokensHaveBeenWithdrawn = false;
+    uint8 lastCompoundIndex;
     uint256 depositTimeFrame = 1 hours;
 
     /**
@@ -1451,8 +1452,9 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
 
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         if (stakedTokenBal < _amount) {
-            //TODO Issue the receipt token ?
-        _retrieveTokensFromMason();
+            _retrieveTokensFromMason();
+            stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+
         }
         stakedTokenBal = stakedTokenBal > _amount ? _amount : stakedTokenBal;
         uint256 withdrawFee = stakedTokenBal.mul(securityFee).div(
@@ -1558,8 +1560,8 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         return totalPoolBalance;
     }
 
-    function _getCurrentMasonIndex() internal view returns (uint256) {
-        return IMasonry(masonry).epoch() % 6;
+    function _getCurrentMasonIndex() internal view returns (uint8) {
+        return uint8(IMasonry(masonry).epoch() % 6);
     }
 
     /**
@@ -1567,6 +1569,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * and transfer them to the strategy
      */
     function _retrieveTokensFromMason() internal {
+        _checkNewEpoch();
         if (!tokensHaveBeenWithdrawn) {
             address currentMason = masons[_getCurrentMasonIndex()];
             IMason(currentMason).exit();
@@ -1577,6 +1580,13 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
             IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
 
             tokensHaveBeenWithdrawn = true;
+        }
+    }
+
+    function _checkNewEpoch() internal {
+        if (lastCompoundIndex != _getCurrentMasonIndex()) {
+            tokensHaveBeenWithdrawn = false;
+            lastCompoundIndex = _getCurrentMasonIndex();
         }
     }
 
