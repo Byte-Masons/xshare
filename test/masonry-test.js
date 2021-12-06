@@ -180,17 +180,19 @@ describe("Vaults", function () {
     });
     it("should allow withdrawals", async function () {
       const userBalance = await tshare.balanceOf(selfAddress);
-      console.log(userBalance);
-      let vaultBalance = await vault.balance();
+      console.log(`userBalance: ${userBalance}`);
       const depositAmount = ethers.utils.parseEther("0.0001");
       await vault.connect(self).deposit(depositAmount);
-      console.log(await tshare.balanceOf(selfAddress));
+      console.log(`await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(selfAddress)}`);
       const newUserBalance = userBalance - depositAmount;
       const tokenBalance = (await tshare.balanceOf(selfAddress)).toString();
       expect(tokenBalance).to.equal(newUserBalance.toString());
       await vault.connect(self).withdraw(depositAmount);
-      console.log(await tshare.balanceOf(selfAddress));
-      //expect(await tshare.balanceOf(selfAddress)).to.equal(ethers.utils.parseEther("1"))
+      console.log(`await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(selfAddress)}`);
+      const userBalanceAfterWithdraw = (
+        await tshare.balanceOf(selfAddress)
+      ).toString();
+      expect(userBalanceAfterWithdraw).to.equal(userBalance.toString());
     });
     // it("should be able to harvest", async function () {
     //   const userBalance = await uniToken.balanceOf(selfAddress);
