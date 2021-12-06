@@ -185,14 +185,17 @@ describe("Vaults", function () {
       await vault.connect(self).deposit(depositAmount);
       console.log(`await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(selfAddress)}`);
       const newUserBalance = userBalance - depositAmount;
-      const tokenBalance = (await tshare.balanceOf(selfAddress)).toString();
-      expect(tokenBalance).to.equal(newUserBalance.toString());
+      const tokenBalance = await tshare.balanceOf(selfAddress);
+      expect(tokenBalance).to.equal(newUserBalance);
       await vault.connect(self).withdraw(depositAmount);
       console.log(`await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(selfAddress)}`);
       const userBalanceAfterWithdraw = (
         await tshare.balanceOf(selfAddress)
-      ).toString();
-      expect(userBalanceAfterWithdraw).to.equal(userBalance.toString());
+      );
+      const securityFee = 10;
+      const percentDivisor = 10000;
+      const withdrawFee = depositAmount * securityFee / percentDivisor;
+      expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
     });
     // it("should be able to harvest", async function () {
     //   const userBalance = await uniToken.balanceOf(selfAddress);
