@@ -325,6 +325,8 @@ describe("Vaults", function () {
       // await moveForwardNEpochs(1, tombTreasury, harvest);
       await moveTimeForward(2);
       await strategy.connect(self).harvest();
+      await moveTimeForward(2);
+      await strategy.connect(self).harvest();
       await vault.connect(self).withdraw(depositAmount);
       console.log(
         `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
