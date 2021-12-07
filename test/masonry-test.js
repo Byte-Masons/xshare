@@ -3,11 +3,16 @@ const { waffle } = require("hardhat");
 const pools = require("../pools.json");
 const hre = require("hardhat");
 
-const moveForwardNEpochs = async (n) => {
+const moveForwardNEpochs = async (n, treasury) => {
   const hour = 3600;
   const epoch = 6 * hour;
-  await network.provider.send("evm_increaseTime", [epoch * n]);
-  await network.provider.send("evm_mine");
+  console.log("moveForwardNEpochs");
+  for (let index = 0; index < n; index++) {
+    await network.provider.send("evm_increaseTime", [epoch]);
+    await network.provider.send("evm_mine");
+    await treasury.allocateSeigniorage();
+    console.log("finished allocateSeigniorage");
+  }
 };
 
 describe("Vaults", function () {
@@ -15,14 +20,19 @@ describe("Vaults", function () {
   let Vault;
   let Strategy;
   let Treasury;
+  let TombTreasury;
   let TShare;
   let Mason;
   let vault;
   let strategy;
   let treasury;
+  let tombTreasury;
   let tshare;
   let masons;
   let stakedToken = ethers.utils.getAddress(pools.tomb.stake[i].token);
+  const tombTreasuryAddress = ethers.utils.getAddress(
+    pools.tomb.stake[i].treasury
+  );
 
   let self;
   let selfAddress;
@@ -62,6 +72,7 @@ describe("Vaults", function () {
     Strategy = await ethers.getContractFactory("ReaperAutoCompoundMasonry");
     Vault = await ethers.getContractFactory("ReaperVaultv1_2");
     Treasury = await ethers.getContractFactory("ReaperTreasury");
+    TombTreasury = await ethers.getContractFactory("Treasury");
     TShare = await ethers.getContractFactory("TShare");
     Mason = await ethers.getContractFactory("Mason");
     console.log("artifacts");
@@ -69,6 +80,7 @@ describe("Vaults", function () {
     //deploy contracts
     treasury = await Treasury.deploy();
     tshare = await TShare.attach(stakedToken);
+    tombTreasury = await TombTreasury.attach(tombTreasuryAddress);
     console.log("treasury");
 
     vault = await Vault.deploy(
@@ -224,7 +236,7 @@ describe("Vaults", function () {
       const tokenBalance = await tshare.balanceOf(selfAddress);
       expect(tokenBalance).to.equal(newUserBalance);
       const fullEpochCycle = 6;
-      await moveForwardNEpochs(fullEpochCycle);
+      await moveForwardNEpochs(fullEpochCycle, tombTreasury);
       await strategy.connect(self).harvest();
       await vault.connect(self).withdraw(depositAmount);
       console.log(

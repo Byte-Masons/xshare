@@ -3557,6 +3557,7 @@
           "name": "TSHARE Masonry Vault",
           "symbol": "rfTSHARE",
           "token": "0x4cdF39285D7Ca8eB3f090fDA0C069ba5F4145B37",
+          "treasury": "0xF50c6dAAAEC271B56FCddFBC38F0b56cA45E6f0d",
           "vault": {
             "address": "todo"
           },
