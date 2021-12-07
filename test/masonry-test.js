@@ -3,16 +3,37 @@ const { waffle } = require("hardhat");
 const pools = require("../pools.json");
 const hre = require("hardhat");
 
-const moveForwardNEpochs = async (n, treasury) => {
+const moveTimeForward = async (seconds) => {
+  await network.provider.send("evm_increaseTime", [seconds]);
+  await network.provider.send("evm_mine");
+};
+
+const moveForwardNEpochs = async (n, treasury, harvest, epochAction) => {
   const hour = 3600;
   const epoch = 6 * hour;
   console.log("moveForwardNEpochs");
   for (let index = 0; index < n; index++) {
-    await network.provider.send("evm_increaseTime", [epoch]);
-    await network.provider.send("evm_mine");
+    await moveTimeForward(epoch);
+    const tombSupplyBefore = await treasury.getTombCirculatingSupply();
+    console.log(`tombSupplyBefore: ${tombSupplyBefore}`);
     await treasury.allocateSeigniorage();
+    const tombSupplyAfter = await treasury.getTombCirculatingSupply();
+    console.log(`tombSupplyAfter: ${tombSupplyAfter}`);
+    await moveTimeForward(2);
+    await harvest();
+    if (epochAction) {
+      await epochAction();
+    }
+
     console.log("finished allocateSeigniorage");
   }
+};
+
+const moveToStakingWindow = async () => {
+  const hour = 3600;
+  const epoch = 6 * hour;
+  console.log("moveToStakingWindow");
+  await moveTimeForward(epoch - hour + 5);
 };
 
 describe("Vaults", function () {
@@ -35,6 +56,7 @@ describe("Vaults", function () {
   );
 
   let self;
+  let tshareWhale;
   let selfAddress;
   let owner;
   let addr1;
@@ -59,11 +81,17 @@ describe("Vaults", function () {
     //get signers
     [owner, addr1, addr2, addr3, addr4, ...addrs] = await ethers.getSigners();
     const tshareHolder = "0xe739b43f46e3efee99ff698123110b4da4657b2b";
+    const tshareWhaleAddress = "0x2ff023bb5bb52b43ba62b36c03ccdd82d90ae7c2";
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [tshareHolder],
     });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [tshareWhaleAddress],
+    });
     self = await ethers.provider.getSigner(tshareHolder);
+    tshareWhale = await ethers.provider.getSigner(tshareWhaleAddress);
     selfAddress = await self.getAddress();
     ownerAddress = await owner.getAddress();
     console.log("addresses");
@@ -92,24 +120,22 @@ describe("Vaults", function () {
     );
     console.log("vault");
 
+    strategy = await Strategy.deploy(vault.address, treasury.address);
+    console.log("strategy");
     console.log("deploying Masons");
 
     const deployMasons = async () => {
       const nrOfMasons = 6;
       const masonsAddress = [];
       for (let i = 0; i < nrOfMasons; i++) {
-        const mason = await Mason.deploy();
+        const mason = await Mason.deploy(strategy.address);
         masonsAddress.push(mason.address);
       }
       return masonsAddress;
     };
     const masonsAddress = await deployMasons();
-    strategy = await Strategy.deploy(
-      vault.address,
-      treasury.address,
-      masonsAddress
-    );
-    //  strategy = await Strategy.attach("0x94f93741814589E4Ad6a5669e6C8cF961992cf64");
+
+    await strategy.setMasons(masonsAddress);
     await vault.initialize(strategy.address);
 
     console.log(`Strategy deployed to ${strategy.address}`);
@@ -133,6 +159,14 @@ describe("Vaults", function () {
       .connect(self)
       .approve(vault.address, ethers.utils.parseEther("1000000000"));
     console.log("approvals4");
+    await tshare
+      .connect(tshareWhale)
+      .approve(vault.address, ethers.utils.parseEther("1000000000"));
+    console.log("approvals5");
+    await vault
+      .connect(tshareWhale)
+      .approve(vault.address, ethers.utils.parseEther("1000000000"));
+    console.log("approvals6");
   });
 
   describe("Deploying the vault and strategy", function () {
@@ -235,8 +269,12 @@ describe("Vaults", function () {
       const newUserBalance = userBalance - depositAmount;
       const tokenBalance = await tshare.balanceOf(selfAddress);
       expect(tokenBalance).to.equal(newUserBalance);
+      const harvest = async () => {
+        await strategy.connect(self).harvest();
+        await moveTimeForward(2);
+      };
       const fullEpochCycle = 6;
-      await moveForwardNEpochs(fullEpochCycle, tombTreasury);
+      await moveForwardNEpochs(fullEpochCycle, tombTreasury, harvest);
       await strategy.connect(self).harvest();
       await vault.connect(self).withdraw(depositAmount);
       console.log(
@@ -249,6 +287,60 @@ describe("Vaults", function () {
       const percentDivisor = 10000;
       const withdrawFee = (depositAmount * securityFee) / percentDivisor;
       expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
+    });
+    it("should provide yield", async function () {
+      this.timeout(120000);
+      const userBalance = await tshare.balanceOf(selfAddress);
+      console.log(`userBalance: ${userBalance}`);
+      const depositAmount = ethers.utils.parseEther("0.0001");
+      await vault.connect(self).deposit(depositAmount);
+      console.log(
+        `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
+          selfAddress
+        )}`
+      );
+
+      await moveToStakingWindow();
+
+      const whaleDeposit = async () => {
+        const whaleDepositAmount = ethers.utils.parseEther("1");
+        await vault.connect(tshareWhale).deposit(whaleDepositAmount);
+        await moveTimeForward(2);
+      };
+      await whaleDeposit();
+      const newUserBalance = userBalance - depositAmount;
+      const tokenBalance = await tshare.balanceOf(selfAddress);
+      expect(tokenBalance).to.equal(newUserBalance);
+      const fullEpochCycle = 6;
+      const harvest = async () => {
+        await strategy.connect(self).harvest();
+        await moveTimeForward(2);
+      };
+      await moveForwardNEpochs(
+        fullEpochCycle,
+        tombTreasury,
+        harvest,
+        whaleDeposit
+      );
+      // await moveForwardNEpochs(1, tombTreasury, harvest);
+      await moveTimeForward(2);
+      await strategy.connect(self).harvest();
+      await vault.connect(self).withdraw(depositAmount);
+      console.log(
+        `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
+          selfAddress
+        )}`
+      );
+      const userBalanceAfterWithdraw = await tshare.balanceOf(selfAddress);
+      console.log(`userBalanceAfterWithdraw: ${userBalanceAfterWithdraw}`);
+      const securityFee = 10;
+      const percentDivisor = 10000;
+      const withdrawFee = (depositAmount * securityFee) / percentDivisor;
+      const startingBalanceMinusWithdrawFee = userBalance - withdrawFee;
+      console.log(
+        `startingBalanceMinusWithdrawFee: ${startingBalanceMinusWithdrawFee}`
+      );
+      // expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
     });
   });
 });
