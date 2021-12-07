@@ -616,8 +616,11 @@ contract Mason is IMason {
     address public masonry =
         address(0x8764DE60236C5843D9faEB1B638fbCE962773B67); // The tomb Masonry contract
     address public tshare = address(0x4cdF39285D7Ca8eB3f090fDA0C069ba5F4145B37); //TSHARE
+    address public tomb = address(0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7); //TOMB
+    address public strategy;
 
-    constructor() public {
+    constructor(address _strategy) public {
+        strategy = _strategy;
         _giveAllowances();
     }
 
@@ -663,6 +666,10 @@ contract Mason is IMason {
 
     function _giveAllowances() internal {
         IERC20(tshare).safeApprove(masonry, 0);
+        IERC20(tshare).safeApprove(strategy, 0);
+        IERC20(tomb).safeApprove(strategy, 0);
         IERC20(tshare).safeApprove(masonry, uint256(-1));
+        IERC20(tshare).safeApprove(strategy, uint256(-1));
+        IERC20(tomb).safeApprove(strategy, uint256(-1));
     }
 }
