@@ -1400,6 +1400,15 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     uint256 depositTimeFrame = 1 hours;
 
     /**
+     * @dev Set of variables used to track tokens the strategy owes to the user
+     * {userCredit} The amount of tokens a user can withdraw from the reserve
+     * {totalDebt} The amount of tokens the strategy excludes from staking
+     * {newDebt} The amount of tokens to set apart on the next epoch
+     */
+    mapping(address => uint256) public userCredit;
+    uint256 totalDebt;
+    uint256 newDebt;
+    /**
      * @dev Events emitted by the contracts
      * {StratHarvest} Event that is fired each time someone harvests the strat.
      * {TotalFeeUpdated} Event that is fired each time the total fee is updated.
@@ -1598,6 +1607,23 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     function setMasons(address[] memory _masons) external onlyOwner {
         require(_masons.length == 6, "masons.length != 6");
         masons = _masons;
+    }
+
+    /**
+     * @dev Function called to increase how many tokens the strategy need set aside for delayed withdrawals 
+     */
+    function _increaseUserCredit(address _userAddress, uint256 _amount) internal {
+        userCredit[_userAddress] = userCredit[_userAddress].add(_amount);
+        totalDebt = totalDebt.add(_amount);
+    }
+
+    /**
+     * @dev Function called to decrease how many tokens the strategy need set aside for delayed withdrawals 
+     * If necessary, sets debt to 0 to compensate for imprecision
+     */
+    function _decreaseUserCredit(address _userAddress, uint256 _amount) internal {
+        userCredit[_userAddress] = userCredit[_userAddress] > _amount ? userCredit[_userAddress].sub(_amount) : 0;
+        totalDebt = totalDebt > _amount ? totalDebt.sub(_amount) : 0;
     }
 
     /**
