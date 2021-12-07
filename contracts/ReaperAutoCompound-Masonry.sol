@@ -1415,13 +1415,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     constructor(
         address _vault,
-        address _treasury,
-        address[] memory _masons
+        address _treasury
     ) public {
-        require(_masons.length == 6, "_masons.length != 6");
         vault = _vault;
         treasury = _treasury;
-        masons = _masons;
 
         _giveAllowances();
     }
