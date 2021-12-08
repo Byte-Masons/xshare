@@ -5,8 +5,6 @@ import { MetamaskInfo } from "./components/MetamaskInfo";
 import FarmWrapper from "./components/FarmWrapper";
 import Grid from "@mui/material/Grid";
 
-const FANTOM_ID = 250;
-
 function App() {
   const [state, setState] = useState({
     isMetaMaskDetected: false,
@@ -23,7 +21,7 @@ function App() {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const network = await provider.getNetwork();
-        if (signer && network && network.chainId === FANTOM_ID) {
+        if (signer && network) {
           setState({ ...state, isMetaMaskDetected: true });
         }
       } catch (error) {}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import { hasApprovedTShare } from "../api/vault";
+import { hasApprovedTShare, approveTShare } from "../api/vault";
 
 export default function Stake({ tshareBalance }) {
   const [state, setState] = useState({
@@ -13,8 +13,7 @@ export default function Stake({ tshareBalance }) {
   useEffect(() => {
     if (state.hasApprovedTShare == null) {
       async function fetchHasApproved() {
-        // const hasApproved = await hasApprovedTShare();
-        const hasApproved = false;
+        const hasApproved = await hasApprovedTShare();
         setState({ ...state, hasApprovedTShare: hasApproved });
       }
       fetchHasApproved();
@@ -37,10 +36,12 @@ export default function Stake({ tshareBalance }) {
     } catch (error) {}
   };
 
-  const approve = async () => {
-    try {
-    } catch (error) {}
+  const handleApprove = async () => {
+    const setHasApproved = (hasApproved) =>
+      setState({ ...state, hasApprovedTShare: hasApproved });
+    await approveTShare(setHasApproved);
   };
+
   return (
     <div>
       <Stack spacing={2} direction="row">
@@ -58,7 +59,7 @@ export default function Stake({ tshareBalance }) {
         />
         <Button
           variant="outlined"
-          onClick={approve}
+          onClick={handleApprove}
           disabled={state.hasApprovedTShare}
         >
           Approve
