@@ -1443,9 +1443,14 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         require(masons.length == 6, "The masons array must be initialized");
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         address currentMason = masons[_getCurrentMasonIndex()];
+        console.log("stakedTokenBal: ",stakedTokenBal);
+        bool result = now > IMason(currentMason).nextEpochPoint() - depositTimeFrame;
+        console.log("now: ",now,", depositTimeFrameStartTime: ",IMason(currentMason).nextEpochPoint() - depositTimeFrame);
+        console.log("now > depositWindowStart ? ", result);
+        bool conditionResult = stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame;
+        console.log("stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame ? ", conditionResult);
         if (stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame) {
             console.log("I'm the root of all evil, and I will deposit TSHARES!!!");
-            console.log("now: ",now,", depositTimeFrameStartTime: ",IMason(currentMason).nextEpochPoint() - depositTimeFrame);
             IERC20(stakedToken).safeTransfer(currentMason, stakedTokenBal);
             uint256 masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
             IMason(currentMason).stake(masonStakedTokenBal);
@@ -1539,7 +1544,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * @dev Swaps {rewardToken} for {stakedToken} using SpookySwap.
      */
     function _addLiquidity() internal {
+        console.log("\n--------ADDLIQUIDITY FUNCTION IN--------");
+        uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+        console.log("stakedTokenBal before: ", stakedTokenBal);
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
+        console.log("rewardTokenBal before: ", rewardTokenBal);
         if (rewardTokenBal > 0) {
             IUniswapRouterETH(uniRouter)
                 .swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -1550,6 +1559,9 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
                     now.add(60)
                 );
         }
+        stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+        console.log("stakedTokenBal after: ", stakedTokenBal);
+        console.log("--------ADDLIQUIDITY FUNCTION OUT--------\n");
     }
 
     /**
@@ -1594,6 +1606,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         if (!tokensHaveBeenWithdrawn) {
             address currentMason = masons[_getCurrentMasonIndex()];
             uint256 masonBalance = IMason(currentMason).balanceOf();
+            console.log("masonBalance :", masonBalance);
             console.log("Balance of mason :", IERC20(stakedToken).balanceOf(currentMason));
 
             if (masonBalance > 0) {
