@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import { hasApprovedTShare, approveTShare } from "../api/vault";
+import { hasApprovedTShare, approveTShare, depositTShare } from "../api/vault";
 
-export default function Stake({ tshareBalance }) {
+export default function Stake({ tshareBalance, vaultBalance }) {
   const [state, setState] = useState({
     stakeTShareAmount: 0,
     hasApprovedTShare: null,
@@ -33,6 +33,7 @@ export default function Stake({ tshareBalance }) {
 
   const stakeTShare = async () => {
     try {
+      await depositTShare();
     } catch (error) {}
   };
 
@@ -46,6 +47,9 @@ export default function Stake({ tshareBalance }) {
     <div>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>TShare in wallet: {tshareBalance}</div>
+      </Stack>
+      <Stack spacing={2} direction="row">
+        <div style={{ lineHeight: 3.2 }}>TShare staked: {vaultBalance}</div>
       </Stack>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>TShare amount to stake:</div>

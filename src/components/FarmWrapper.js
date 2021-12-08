@@ -5,12 +5,13 @@ import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import Stake from "./Stake";
-import { getTShareBalance } from "../api/tokens";
+import { getTShareBalance, getVaultBalance } from "../api/tokens";
 
 export default function FarmWrapper() {
   const [state, setState] = useState({
     tab: "1",
     tshareBalance: null,
+    vaultBalance: null,
     rfTokenBalance: null,
   });
 
@@ -25,6 +26,13 @@ export default function FarmWrapper() {
         setState({ ...state, tshareBalance: Number(balance) });
       }
       fetchTShareBalance();
+    }
+    if (state.vaultBalance == null) {
+      async function fetchVaultBalance() {
+        const balance = await getVaultBalance();
+        setState({ ...state, vaultBalance: Number(balance) });
+      }
+      fetchVaultBalance();
     }
   });
 
@@ -43,7 +51,10 @@ export default function FarmWrapper() {
           </TabList>
         </Box>
         <TabPanel value="1">
-          <Stake tshareBalance={state.tshareBalance} />
+          <Stake
+            tshareBalance={state.tshareBalance}
+            vaultBalance={state.vaultBalance}
+          />
         </TabPanel>
         <TabPanel value="2">Unstake</TabPanel>
       </TabContext>
