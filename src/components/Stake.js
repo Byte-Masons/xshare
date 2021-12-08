@@ -33,7 +33,7 @@ export default function Stake({ tshareBalance, vaultBalance }) {
 
   const stakeTShare = async () => {
     try {
-      await depositTShare();
+      await depositTShare(state.stakeTShareAmount);
     } catch (error) {}
   };
 
