@@ -1400,15 +1400,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     bool sameBlockLock;
 
     /**
-     * @dev Set of variables used to track tokens the strategy owes to the user
-     * {userCredit} The amount of tokens a user can withdraw from the reserve
-     * {totalDebt} The amount of tokens the strategy excludes from staking
-     * {newDebt} The amount of tokens to set apart on the next epoch
-     */
-    mapping(address => uint256) public userCredit;
-    uint256 totalDebt;
-    uint256 newDebt;
-    /**
      * @dev Events emitted by the contracts
      * {StratHarvest} Event that is fired each time someone harvests the strat.
      * {TotalFeeUpdated} Event that is fired each time the total fee is updated.
@@ -1438,23 +1429,14 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * It deposits {stakedToken} in the masonry to farm {rewardToken}
      */
     function deposit() public whenNotPaused {
-        console.log("\n--------DEPOSIT FUNCTION IN--------");
         require(masons.length == 6, "The masons array must be initialized");
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         address currentMason = masons[_getCurrentMasonIndex()];
-        console.log("stakedTokenBal: ",stakedTokenBal);
-        bool result = now > IMason(currentMason).nextEpochPoint() - depositTimeFrame;
-        console.log("now: ",now,", depositTimeFrameStartTime: ",IMason(currentMason).nextEpochPoint() - depositTimeFrame);
-        console.log("now > depositWindowStart ? ", result);
-        bool conditionResult = stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame;
-        console.log("stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame ? ", conditionResult);
         if (stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame) {
-            console.log("I'm the root of all evil, and I will deposit TSHARES!!!");
             IERC20(stakedToken).safeTransfer(currentMason, stakedTokenBal);
             uint256 masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
             IMason(currentMason).stake(masonStakedTokenBal);
         }
-        console.log("--------DEPOSIT FUNCTION OUT--------\n");
     }
 
     /**
@@ -1463,11 +1445,9 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * The available {stakedToken} minus fees is returned to the vault.
      */
     function withdraw(uint256 _amount) external {
-        console.log("\n--------WITHDRAW FUNCTION IN--------");
         require(_msgSender() == vault, "!vault");
 
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
-        console.log("_amount: ",_amount,"stakedTokenBal: ",stakedTokenBal);
         if (stakedTokenBal < _amount) {
             _retrieveTokensFromMason();
             stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
@@ -1481,8 +1461,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
             vault,
             stakedTokenBal.sub(withdrawFee)
         );
-        console.log("stakedTokenBal.sub(withdrawFee): ",stakedTokenBal.sub(withdrawFee));
-        console.log("--------WITHDRAW FUNCTION OUT--------\n");
     }
 
     /**
@@ -1494,7 +1472,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * 5. It deposits the new LP tokens.
      */
     function harvest() external whenNotPaused {
-        console.log("\n--------HARVEST FUNCTION IN--------");
         require(!Address.isContract(msg.sender), "!contract");
         _retrieveTokensFromMason();
         _chargeFees();
@@ -1504,7 +1481,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         }
         sameBlockLock = false;
         emit StratHarvest(_msgSender());
-        console.log("--------HARVEST FUNCTION OUT--------\n");
     }
 
     /**
@@ -1543,11 +1519,8 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * @dev Swaps {rewardToken} for {stakedToken} using SpookySwap.
      */
     function _addLiquidity() internal {
-        console.log("\n--------ADDLIQUIDITY FUNCTION IN--------");
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
-        console.log("stakedTokenBal before: ", stakedTokenBal);
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
-        console.log("rewardTokenBal before: ", rewardTokenBal);
         if (rewardTokenBal > 0) {
             IUniswapRouterETH(uniRouter)
                 .swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -1559,8 +1532,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
                 );
         }
         stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
-        console.log("stakedTokenBal after: ", stakedTokenBal);
-        console.log("--------ADDLIQUIDITY FUNCTION OUT--------\n");
     }
 
     /**
@@ -1568,13 +1539,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * and transfer them to the strategy
      */
     function _retrieveTokensFromMason() internal {
-        console.log("--------RETRIEVETOKENFROMMASON FUNCTION IN--------");
         _checkNewEpoch();
         if (!tokensHaveBeenWithdrawn) {
             address currentMason = masons[_getCurrentMasonIndex()];
             uint256 masonBalance = IMason(currentMason).balanceOf();
-            console.log("masonBalance :", masonBalance);
-            console.log("Balance of mason :", IERC20(stakedToken).balanceOf(currentMason));
 
             if (masonBalance > 0) {
                 sameBlockLock = true;
@@ -1583,8 +1551,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
 
             uint256 masonStakedToken = IERC20(stakedToken).balanceOf(currentMason);
             uint256 masonRewardToken = IERC20(rewardToken).balanceOf(currentMason);
-            console.log("Balance of masonStakedToken :", masonStakedToken);
-            console.log("Balance of masonRewardToken :", masonRewardToken);
             if (masonStakedToken > 0) {
                 IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
             }
@@ -1594,20 +1560,16 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
 
             tokensHaveBeenWithdrawn = true;
         }
-        console.log("--------RETRIEVETOKENFROMMASON FUNCTION OUT--------");
     }
 
     /**
      * @dev Will check if the epoch has changed and will reset {tokensHaveBeenWithdrawn}
      */
     function _checkNewEpoch() internal {
-        console.log("--------CHECKNEWEPOCH FUNCTION IN--------");
-        console.log("lastWithdrawIndex :", lastWithdrawIndex, ", _getCurrentMasonIndex: ", _getCurrentMasonIndex());
         if (lastWithdrawIndex != _getCurrentMasonIndex()) {
             tokensHaveBeenWithdrawn = false;
             lastWithdrawIndex = _getCurrentMasonIndex();
         }
-        console.log("--------CHECKNEWEPOCH FUNCTION OUT--------");
     }
 
     /**
@@ -1658,23 +1620,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     function setMasons(address[] memory _masons) external onlyOwner {
         require(_masons.length == 6, "masons.length != 6");
         masons = _masons;
-    }
-
-    /**
-     * @dev Function called to increase how many tokens the strategy need set aside for delayed withdrawals 
-     */
-    function _increaseUserCredit(address _userAddress, uint256 _amount) internal {
-        userCredit[_userAddress] = userCredit[_userAddress].add(_amount);
-        totalDebt = totalDebt.add(_amount);
-    }
-
-    /**
-     * @dev Function called to decrease how many tokens the strategy need set aside for delayed withdrawals 
-     * If necessary, sets debt to 0 to compensate for imprecision
-     */
-    function _decreaseUserCredit(address _userAddress, uint256 _amount) internal {
-        userCredit[_userAddress] = userCredit[_userAddress] > _amount ? userCredit[_userAddress].sub(_amount) : 0;
-        totalDebt = totalDebt > _amount ? totalDebt.sub(_amount) : 0;
     }
 
     /**
