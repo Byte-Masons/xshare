@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { getTShareContract } from "./tokens";
 const ReaperVaultABI = require("../abi/ReaperVault.json");
 let reaperVaultContract = null;
-const vaultAddress = "0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07";
+const vaultAddress = "0x0e7c5313E9BB80b654734d9b7aB1FB01468deE3b";
 
 export const hasApprovedTShare = async () => {
   const tshare = getTShareContract();

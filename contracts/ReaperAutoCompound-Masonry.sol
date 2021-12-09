@@ -1394,11 +1394,13 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {tokensHaveBeenWithdrawn} - Flag to prevent interacting with the masonry before the tokens have been withdrawn,
      * as any interaction with the masonry locks the assets from withdrawal
      * {tokensCanBeDeposited} - Flag necessary to keep tokens in the strategy until they need to be deposited
+     * {depositTimeFrame} - Duration during which deposits will stake into the masonry before the end of an epoch
+     * {sameBlockLock} - Lock necessary to prevent withdrawing and staking in the masonry in the same block, triggering its reentrancy guard
      */
     bool tokensHaveBeenWithdrawn = false;
     uint8 lastCompoundIndex;
     uint256 depositTimeFrame = 1 hours;
-    uint8 lock = 0;
+    bool sameBlockLock;
 
     /**
      * @dev Set of variables used to track tokens the strategy owes to the user
@@ -1500,10 +1502,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         _retrieveTokensFromMason();
         _chargeFees();
         _addLiquidity();
-        if(lock == 0) {
+        if(!sameBlockLock) {
             deposit();
         }
-        lock = 0;
+        sameBlockLock = false;
         emit StratHarvest(_msgSender());
         console.log("--------HARVEST FUNCTION OUT--------\n");
     }
@@ -1592,6 +1594,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         return totalPoolBalance;
     }
 
+    function balanceDuringCurrentEpoch() public view returns (uint256) {
+        return balanceOfTShare().add(IMason(masons[_getCurrentMasonIndex()]).balanceOf());
+    }
+
     function _getCurrentMasonIndex() internal view returns (uint8) {
         return uint8(IMasonry(masonry).epoch() % 6);
     }
@@ -1610,7 +1616,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
             console.log("Balance of mason :", IERC20(stakedToken).balanceOf(currentMason));
 
             if (masonBalance > 0) {
-                lock = 1;
+                sameBlockLock = true;
                 IMason(currentMason).exit();
             }
 
@@ -1667,19 +1673,18 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * vault, ready to be migrated to the new strat.
      */
     function retireStrat() external {
-        //TODO can we keep a similar function in a masonry vault, subject to underlying timelock ?
-        // require(msg.sender == vault, "!vault");
-        // IMasterChef(masonry).emergencyWithdraw(poolId); //TODO change from MASTERCHEF call to MASONRY
-        // uint256 pairBal = IERC20(lpPair).balanceOf(address(this));
-        // IERC20(lpPair).transfer(vault, pairBal);
+        require(msg.sender == vault, "!vault");
+        _retrieveTokensFromMason();
+        uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+        IERC20(stakedToken).safeTransfer(vault, stakedTokenBal);
     }
 
     /**
-     * @dev Pauses deposits. Withdraws all funds from the masonry, leaving rewards behind
+     * @dev Pauses deposits. Withdraws all funds from the masonry for the current mason, leaving rewards behind
      */
     function panic() public onlyOwner {
-        // pause();
-        // IMasterChef(masonry).withdraw(poolId, balanceOfPool()); //TODO change from MASTERCHEF call to MASONRY
+        pause();
+        _retrieveTokensFromMason();
     }
 
     /**
