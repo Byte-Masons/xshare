@@ -16,7 +16,36 @@ const moveForwardNEpochs = async (n, treasury, harvest, epochAction) => {
     await moveTimeForward(epoch);
     const tombSupplyBefore = await treasury.getTombCirculatingSupply();
     console.log(`tombSupplyBefore: ${tombSupplyBefore}`);
-    await treasury.allocateSeigniorage();
+    try {
+      await treasury.allocateSeigniorage();
+    } catch (error) {
+      console.log('lol');
+    }
+    const tombSupplyAfter = await treasury.getTombCirculatingSupply();
+    console.log(`tombSupplyAfter: ${tombSupplyAfter}`);
+    await moveTimeForward(2);
+    await harvest();
+    if (epochAction) {
+      await epochAction();
+    }
+
+    console.log("finished allocateSeigniorage");
+  }
+};
+
+const moveForwardNEpochsHarvestEveryHour = async (n, treasury, harvest, epochAction) => {
+  const hour = 3600;
+  const epoch = 1 * hour;
+  console.log("moveForwardNEpochs");
+  for (let index = 0; index < n*6; index++) {
+    await moveTimeForward(epoch);
+    const tombSupplyBefore = await treasury.getTombCirculatingSupply();
+    console.log(`tombSupplyBefore: ${tombSupplyBefore}`);
+    try {
+      await treasury.allocateSeigniorage();
+    } catch (error) {
+      console.log('lol');
+    }
     const tombSupplyAfter = await treasury.getTombCirculatingSupply();
     console.log(`tombSupplyAfter: ${tombSupplyAfter}`);
     await moveTimeForward(2);
@@ -304,6 +333,11 @@ describe("Vaults", function () {
 
       const whaleDeposit = async () => {
         const whaleDepositAmount = ethers.utils.parseEther("1");
+        try {
+          await tombTreasury.allocateSeigniorage();
+        } catch (error) {
+          console.log('lol');
+        }
         await vault.connect(tshareWhale).deposit(whaleDepositAmount);
         await moveTimeForward(2);
       };
@@ -316,16 +350,23 @@ describe("Vaults", function () {
         await strategy.connect(self).harvest();
         await moveTimeForward(2);
       };
-      await moveForwardNEpochs(
+      await moveForwardNEpochsHarvestEveryHour(
         fullEpochCycle,
         tombTreasury,
         harvest,
         whaleDeposit
       );
+      
+      let currentDate = await ethers.provider.getBlock().then(e => e.timestamp);
+      let nextEpochPoint = ethers.BigNumber.from(await tombTreasury.nextEpochPoint()).toString();
+      console.log("currentDate: ",currentDate);
+      console.log("nextEpochPoint: ", nextEpochPoint);
       // await moveForwardNEpochs(1, tombTreasury, harvest);
       await moveTimeForward(2);
+      console.log("First Harvest");
       await strategy.connect(self).harvest();
       await moveTimeForward(2);
+      console.log("Second Harvest");
       await strategy.connect(self).harvest();
       await vault.connect(self).withdraw(depositAmount);
       console.log(
@@ -342,7 +383,7 @@ describe("Vaults", function () {
       console.log(
         `startingBalanceMinusWithdrawFee: ${startingBalanceMinusWithdrawFee}`
       );
-      // expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
+      expect(parseInt(userBalanceAfterWithdraw)).to.be.greaterThan(parseInt(userBalance - withdrawFee));
     });
   });
 });
