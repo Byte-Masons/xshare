@@ -5,6 +5,7 @@ import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import Stake from "./Stake";
+import Admin from "./Admin";
 import { getTShareBalance, getVaultBalance } from "../api/tokens";
 
 export default function FarmWrapper() {
@@ -48,6 +49,7 @@ export default function FarmWrapper() {
           <TabList onChange={handleTabChange} centered>
             <Tab label="Stake" value="1" />
             <Tab label="Unstake" value="2" />
+            <Tab label="Admin" value="3" />
           </TabList>
         </Box>
         <TabPanel value="1">
@@ -57,6 +59,9 @@ export default function FarmWrapper() {
           />
         </TabPanel>
         <TabPanel value="2">Unstake</TabPanel>
+        <TabPanel value="3">
+          <Admin />
+        </TabPanel>
       </TabContext>
     </Box>
   );
