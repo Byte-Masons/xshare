@@ -26,7 +26,7 @@ export default function Stake({ tshareBalance, vaultBalance }) {
       }
       fetchHasApproved();
     }
-  });
+  }, []);
 
   const amountChanged = (event) => {
     const newAmount = event.target.value;

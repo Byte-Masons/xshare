@@ -8,3 +8,14 @@ const getStrategyContract = () => {
 };
 
 export const harvest = async () => await getStrategyContract().harvest();
+
+export const getMasons = async () => {
+  const contract = getStrategyContract();
+  const masonsLength = 6;
+  const masons = [];
+  for (let index = 0; index < masonsLength; index++) {
+    const mason = await contract.masons(index);
+    masons.push(mason);
+  }
+  return masons;
+};

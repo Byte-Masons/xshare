@@ -28,7 +28,6 @@ export const hasApprovedTShare = async () => {
   const userAddress = await signer.getAddress();
   const allowance = await tshare.allowance(userAddress, vaultAddress);
   const hasApproved = Number(allowance) !== 0;
-  console.log(`hasApproved: ${hasApproved}`);
   return hasApproved;
 };
 
