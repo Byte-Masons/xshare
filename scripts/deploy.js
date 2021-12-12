@@ -1,5 +1,15 @@
 const pools = require("../pools.json");
 
+function speedUpBlockTime() {
+  console.log("speedUpBlockTime");
+  const second = 1000;
+  const secondsToIncrease = 360;
+  setInterval(async () => {
+    console.log("send(evm_increaseTime, ...");
+    await network.provider.send("evm_increaseTime", [secondsToIncrease]);
+  }, second);
+}
+
 async function deployVault(timelock, depositFee) {
   console.log("deploying vault");
   const i = 0;
@@ -51,6 +61,7 @@ module.exports = {
   deployStrategy,
   deployMasons,
   initializeVault,
+  speedUpBlockTime,
 };
 
 async function main() {

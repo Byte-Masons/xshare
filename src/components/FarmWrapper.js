@@ -5,8 +5,11 @@ import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import Stake from "./Stake";
+import Unstake from "./Unstake";
 import Admin from "./Admin";
-import { getTShareBalance, getVaultBalance } from "../api/tokens";
+import { getTShareBalance } from "../api/tshare";
+import { getUserVaultBalance } from "../api/vault";
+import useToastContext from "../hooks/UseToastContext";
 
 export default function FarmWrapper() {
   const [state, setState] = useState({
@@ -16,6 +19,8 @@ export default function FarmWrapper() {
     rfTokenBalance: null,
   });
 
+  const { onSuccess, onError } = useToastContext();
+
   const handleTabChange = (event, newValue) => {
     setState({ ...state, tab: newValue });
   };
@@ -23,15 +28,23 @@ export default function FarmWrapper() {
   useEffect(() => {
     if (state.tshareBalance == null) {
       async function fetchTShareBalance() {
-        const balance = await getTShareBalance();
-        setState({ ...state, tshareBalance: Number(balance) });
+        try {
+          const balance = await getTShareBalance();
+          setState({ ...state, tshareBalance: Number(balance) });
+        } catch (error) {
+          onError(error.data.message);
+        }
       }
       fetchTShareBalance();
     }
     if (state.vaultBalance == null) {
       async function fetchVaultBalance() {
-        const balance = await getVaultBalance();
-        setState({ ...state, vaultBalance: Number(balance) });
+        try {
+          const balance = await getUserVaultBalance();
+          setState({ ...state, vaultBalance: Number(balance) });
+        } catch (error) {
+          onError(error.data.message);
+        }
       }
       fetchVaultBalance();
     }
@@ -58,7 +71,12 @@ export default function FarmWrapper() {
             vaultBalance={state.vaultBalance}
           />
         </TabPanel>
-        <TabPanel value="2">Unstake</TabPanel>
+        <TabPanel value="2">
+          <Unstake
+            tshareBalance={state.tshareBalance}
+            vaultBalance={state.vaultBalance}
+          />
+        </TabPanel>
         <TabPanel value="3">
           <Admin />
         </TabPanel>

@@ -23,6 +23,10 @@ module.exports = {
       forking: {
         url: "https://rpc.ftm.tools/",
       },
+      mining: {
+        auto: true,
+        interval: 1000,
+      },
     },
   },
   solidity: {
