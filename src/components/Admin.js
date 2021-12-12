@@ -7,34 +7,24 @@ import {
   getEpoch,
   allocateSeigniorage,
   getBlockTimestamp,
-  addSeconds,
 } from "../api/admin";
 
 export default function Admin({}) {
   const [state, setState] = useState({
     currentEpoch: null,
     currentTimestamp: null,
-    secondsToAdd: 1,
   });
 
   useEffect(() => {
     if (state.currentEpoch == null && state.currentTimestamp == null) {
       async function startFetchingEpoch() {
-        const epoch = Number(await getEpoch());
+        const currentEpoch = Number(await getEpoch());
         const timestamp = await getBlockTimestamp();
-        setState({ ...state, currentEpoch: epoch, timestamp });
+        setState({ ...state, currentEpoch, timestamp });
       }
       startFetchingEpoch();
     }
   });
-
-  const handleSecondsToAddChange = (e) => {
-    const newValue = Number(e.target.value);
-    console.log(newValue);
-    if (newValue > 0) {
-      setState({ ...state, secondsToAdd: newValue });
-    }
-  };
 
   const updateTimestamp = async () => {
     const timestamp = await getBlockTimestamp();
@@ -59,23 +49,6 @@ export default function Admin({}) {
       <Stack spacing={2} direction="row">
         <Button variant="outlined" onClick={allocateSeigniorage}>
           Allocate seigniorage
-        </Button>
-      </Stack>
-      <Stack spacing={2} direction="row">
-        <div style={{ lineHeight: 3.2 }}>Seconds to add:</div>
-        <TextField
-          id="outlined-basic"
-          label="Seconds"
-          variant="outlined"
-          type="number"
-          value={state.secondsToAdd}
-          onChange={handleSecondsToAddChange}
-        />
-        <Button
-          variant="outlined"
-          onClick={() => addSeconds(state.secondsToAdd)}
-        >
-          Add seconds
         </Button>
       </Stack>
     </div>

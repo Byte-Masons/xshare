@@ -1,5 +1,4 @@
-// import { ethers } from "ethers";
-const { ethers } = require("hardhat");
+import { ethers } from "ethers";
 const strategyABI = require("../abi/ReaperAutoCompound-Masonry.json");
 const masonryABI = require("../abi/Masonry.json");
 const treasuryABI = require("../abi/TombTreasury.json");
@@ -57,8 +56,3 @@ const getCurrentBlock = async () =>
 
 export const getBlockTimestamp = async () =>
   (await getCurrentBlock()).timestamp;
-
-export const addSeconds = async (secondsToAdd) => {
-  const newTimeStamp = (await getBlockTimestamp()) + secondsToAdd;
-  ethers.provider.send("evm_mine", [newTimeStamp]);
-};
