@@ -13,7 +13,7 @@ function App() {
 
   useEffect(() => {
     checkMetamask();
-  });
+  }, []);
 
   const checkMetamask = async () => {
     if (!state.isMetaMaskDetected) {

@@ -23,7 +23,7 @@ export default function Admin({}) {
     if (state.currentEpoch == null && state.currentTimestamp == null) {
       update();
     }
-  });
+  }, []);
 
   const update = async () => {
     try {
