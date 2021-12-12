@@ -8,9 +8,19 @@ export const vaultAddress = "0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07";
 export const getReaperVaultContract = () =>
   getContract(reaperVaultContract, vaultAddress, reaperVaultABI);
 
-export const getVaultBalance = async () => {
+export const getUserVaultBalance = async () => {
   const vaultContract = getReaperVaultContract();
   return await getBalance(vaultContract);
+};
+
+export const getVaultBalance = async () => {
+  const vaultContract = getReaperVaultContract();
+  return await vaultContract.balance();
+};
+
+export const getAvailableVaultBalance = async () => {
+  const vaultContract = getReaperVaultContract();
+  return await vaultContract.available();
 };
 
 export const depositTShare = async (amount) => {

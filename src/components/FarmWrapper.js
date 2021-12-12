@@ -8,7 +8,7 @@ import Stake from "./Stake";
 import Unstake from "./Unstake";
 import Admin from "./Admin";
 import { getTShareBalance } from "../api/tshare";
-import { getVaultBalance } from "../api/vault";
+import { getUserVaultBalance } from "../api/vault";
 import useToastContext from "../hooks/UseToastContext";
 
 export default function FarmWrapper() {
@@ -40,7 +40,7 @@ export default function FarmWrapper() {
     if (state.vaultBalance == null) {
       async function fetchVaultBalance() {
         try {
-          const balance = await getVaultBalance();
+          const balance = await getUserVaultBalance();
           setState({ ...state, vaultBalance: Number(balance) });
         } catch (error) {
           onError(error.data.message);
