@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import { MetamaskInfo } from "./components/MetamaskInfo";
 import FarmWrapper from "./components/FarmWrapper";
 import Grid from "@mui/material/Grid";
+import { ToastContextProvider } from "./components/ToastContext";
 
 function App() {
   const [state, setState] = useState({
@@ -29,20 +30,22 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <Grid
-        container
-        spacing={0}
-        direction="column"
-        alignItems="center"
-        justifyContent="center"
-        style={{ minHeight: "100vh" }}
-      >
-        <Grid item xs={3}>
-          {!state.isMetaMaskDetected ? <MetamaskInfo /> : <FarmWrapper />}
+    <ToastContextProvider>
+      <div className="App">
+        <Grid
+          container
+          spacing={0}
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          style={{ minHeight: "100vh" }}
+        >
+          <Grid item xs={3}>
+            {!state.isMetaMaskDetected ? <MetamaskInfo /> : <FarmWrapper />}
+          </Grid>
         </Grid>
-      </Grid>
-    </div>
+      </div>
+    </ToastContextProvider>
   );
 }
 

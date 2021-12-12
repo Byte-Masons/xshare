@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { hasApprovedTShare, approveTShare } from "../api/tshare";
 import { depositTShare } from "../api/vault";
+import useToastContext from "../hooks/UseToastContext";
 
 export default function Stake({ tshareBalance, vaultBalance }) {
   const [state, setState] = useState({
@@ -11,11 +12,17 @@ export default function Stake({ tshareBalance, vaultBalance }) {
     hasApprovedTShare: null,
   });
 
+  const { onSuccess, onError } = useToastContext();
+
   useEffect(() => {
     if (state.hasApprovedTShare == null) {
       async function fetchHasApproved() {
-        const hasApproved = await hasApprovedTShare();
-        setState({ ...state, hasApprovedTShare: hasApproved });
+        try {
+          const hasApproved = await hasApprovedTShare();
+          setState({ ...state, hasApprovedTShare: hasApproved });
+        } catch (error) {
+          onError(error.data.message);
+        }
       }
       fetchHasApproved();
     }
@@ -34,14 +41,28 @@ export default function Stake({ tshareBalance, vaultBalance }) {
 
   const stakeTShare = async () => {
     try {
-      await depositTShare(state.stakeTShareAmount);
-    } catch (error) {}
+      const tx = await depositTShare(state.stakeTShareAmount);
+      const receipt = await tx.wait();
+      if (receipt.status) {
+        onSuccess("Staking succeeded");
+      }
+    } catch (error) {
+      onError(error.data.message);
+    }
   };
 
   const handleApprove = async () => {
     const setHasApproved = (hasApproved) =>
       setState({ ...state, hasApprovedTShare: hasApproved });
-    await approveTShare(setHasApproved);
+    try {
+      const tx = await approveTShare(setHasApproved);
+      const receipt = await tx.wait();
+      if (receipt.status) {
+        onSuccess("Approval succeeded");
+      }
+    } catch (error) {
+      onError(error.data.message);
+    }
   };
 
   return (

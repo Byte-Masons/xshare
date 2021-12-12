@@ -9,6 +9,7 @@ import Unstake from "./Unstake";
 import Admin from "./Admin";
 import { getTShareBalance } from "../api/tshare";
 import { getVaultBalance } from "../api/vault";
+import useToastContext from "../hooks/UseToastContext";
 
 export default function FarmWrapper() {
   const [state, setState] = useState({
@@ -18,6 +19,8 @@ export default function FarmWrapper() {
     rfTokenBalance: null,
   });
 
+  const { onSuccess, onError } = useToastContext();
+
   const handleTabChange = (event, newValue) => {
     setState({ ...state, tab: newValue });
   };
@@ -25,15 +28,23 @@ export default function FarmWrapper() {
   useEffect(() => {
     if (state.tshareBalance == null) {
       async function fetchTShareBalance() {
-        const balance = await getTShareBalance();
-        setState({ ...state, tshareBalance: Number(balance) });
+        try {
+          const balance = await getTShareBalance();
+          setState({ ...state, tshareBalance: Number(balance) });
+        } catch (error) {
+          onError(error.data.message);
+        }
       }
       fetchTShareBalance();
     }
     if (state.vaultBalance == null) {
       async function fetchVaultBalance() {
-        const balance = await getVaultBalance();
-        setState({ ...state, vaultBalance: Number(balance) });
+        try {
+          const balance = await getVaultBalance();
+          setState({ ...state, vaultBalance: Number(balance) });
+        } catch (error) {
+          onError(error.data.message);
+        }
       }
       fetchVaultBalance();
     }

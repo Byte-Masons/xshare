@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { withdrawTShare } from "../api/vault";
+import useToastContext from "../hooks/UseToastContext";
 
 export default function Unstake({ tshareBalance, vaultBalance }) {
   const [state, setState] = useState({
     unstakeTShareAmount: 0,
   });
+
+  const { onSuccess, onError } = useToastContext();
 
   const amountChanged = (event) => {
     const newAmount = event.target.value;
@@ -22,8 +25,14 @@ export default function Unstake({ tshareBalance, vaultBalance }) {
 
   const unstakeTShare = async () => {
     try {
-      await withdrawTShare(state.unstakeTShareAmount);
-    } catch (error) {}
+      const tx = await withdrawTShare(state.unstakeTShareAmount);
+      const receipt = await tx.wait();
+      if (receipt.status) {
+        onSuccess("Unstaking succeeded");
+      }
+    } catch (error) {
+      onError(error.data.message);
+    }
   };
 
   return (

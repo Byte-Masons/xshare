@@ -5,6 +5,7 @@ import Stack from "@mui/material/Stack";
 import { getBlockTimestamp } from "../api/blockchain";
 import { harvest } from "../api/strategy";
 import { allocateSeigniorage, getEpoch } from "../api/tomb";
+import useToastContext from "../hooks/UseToastContext";
 
 export default function Admin({}) {
   const [state, setState] = useState({
@@ -12,25 +13,63 @@ export default function Admin({}) {
     currentTimestamp: null,
   });
 
+  const { onSuccess, onError } = useToastContext();
+
   useEffect(() => {
     if (state.currentEpoch == null && state.currentTimestamp == null) {
       async function startFetchingEpoch() {
-        const currentEpoch = Number(await getEpoch());
-        const timestamp = await getBlockTimestamp();
-        setState({ ...state, currentEpoch, timestamp });
+        try {
+          const currentEpoch = Number(await getEpoch());
+          const timestamp = await getBlockTimestamp();
+          setState({ ...state, currentEpoch, timestamp });
+        } catch (error) {
+          onError(error.data.message);
+        }
       }
       startFetchingEpoch();
     }
   });
 
   const updateTimestamp = async () => {
-    const timestamp = await getBlockTimestamp();
-    setState({ ...state, timestamp });
+    try {
+      const timestamp = await getBlockTimestamp();
+      setState({ ...state, timestamp });
+    } catch (error) {
+      onError(error.data.message);
+    }
   };
 
   const updateEpoch = async () => {
-    const currentEpoch = Number(await getEpoch());
-    setState({ ...state, currentEpoch });
+    try {
+      const currentEpoch = Number(await getEpoch());
+      setState({ ...state, currentEpoch });
+    } catch (error) {
+      onError(error.data.message);
+    }
+  };
+
+  const handleHarvest = async () => {
+    try {
+      const tx = await harvest();
+      const receipt = await tx.wait();
+      if (receipt.status) {
+        onSuccess("Harvest succeeded");
+      }
+    } catch (error) {
+      onError(error.data.message);
+    }
+  };
+
+  const handleAllocateSeigniorage = async () => {
+    try {
+      const tx = await allocateSeigniorage();
+      const receipt = await tx.wait();
+      if (receipt.status) {
+        onSuccess("allocateSeigniorage succeeded");
+      }
+    } catch (error) {
+      onError(error.data.message);
+    }
   };
 
   return (
@@ -39,10 +78,11 @@ export default function Admin({}) {
         <div style={{ lineHeight: 3.2 }}>
           Current epoch: {state.currentEpoch}
         </div>
+        <Button variant="outlined" onClick={updateEpoch}>
+          Update epoch
+        </Button>
       </Stack>
-      <Button variant="outlined" onClick={updateEpoch}>
-        Update epoch
-      </Button>
+
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>
           Current timestamp: {state.timestamp}
@@ -52,12 +92,12 @@ export default function Admin({}) {
         </Button>
       </Stack>
       <Stack spacing={2} direction="row">
-        <Button variant="outlined" onClick={allocateSeigniorage}>
+        <Button variant="outlined" onClick={handleAllocateSeigniorage}>
           Allocate seigniorage
         </Button>
       </Stack>
       <Stack spacing={2} direction="row">
-        <Button variant="outlined" onClick={harvest}>
+        <Button variant="outlined" onClick={handleHarvest}>
           Harvest
         </Button>
       </Stack>
