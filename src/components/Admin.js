@@ -28,6 +28,11 @@ export default function Admin({}) {
     setState({ ...state, timestamp });
   };
 
+  const updateEpoch = async () => {
+    const currentEpoch = Number(await getEpoch());
+    setState({ ...state, currentEpoch });
+  };
+
   return (
     <div>
       <Stack spacing={2} direction="row">
@@ -35,6 +40,9 @@ export default function Admin({}) {
           Current epoch: {state.currentEpoch}
         </div>
       </Stack>
+      <Button variant="outlined" onClick={updateEpoch}>
+        Update epoch
+      </Button>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>
           Current timestamp: {state.timestamp}

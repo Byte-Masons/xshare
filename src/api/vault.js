@@ -17,3 +17,8 @@ export const depositTShare = async (amount) => {
   const contract = getReaperVaultContract();
   return await contract.deposit(amount);
 };
+
+export const withdrawTShare = async (amount) => {
+  const contract = getReaperVaultContract();
+  return await contract.withdraw(amount);
+};
