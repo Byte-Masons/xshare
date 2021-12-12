@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import { hasApprovedTShare, approveTShare, depositTShare } from "../api/vault";
+import { hasApprovedTShare, approveTShare } from "../api/tshare";
+import { depositTShare } from "../api/vault";
 
 export default function Stake({ tshareBalance, vaultBalance }) {
   const [state, setState] = useState({

@@ -6,7 +6,8 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import Stake from "./Stake";
 import Admin from "./Admin";
-import { getTShareBalance, getVaultBalance } from "../api/tokens";
+import { getTShareBalance } from "../api/tshare";
+import { getVaultBalance } from "../api/vault";
 
 export default function FarmWrapper() {
   const [state, setState] = useState({

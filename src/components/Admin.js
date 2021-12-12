@@ -2,12 +2,9 @@ import React, { useEffect, useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import {
-  harvest,
-  getEpoch,
-  allocateSeigniorage,
-  getBlockTimestamp,
-} from "../api/admin";
+import { getBlockTimestamp } from "../api/blockchain";
+import { harvest } from "../api/strategy";
+import { allocateSeigniorage, getEpoch } from "../api/tomb";
 
 export default function Admin({}) {
   const [state, setState] = useState({
@@ -49,6 +46,11 @@ export default function Admin({}) {
       <Stack spacing={2} direction="row">
         <Button variant="outlined" onClick={allocateSeigniorage}>
           Allocate seigniorage
+        </Button>
+      </Stack>
+      <Stack spacing={2} direction="row">
+        <Button variant="outlined" onClick={harvest}>
+          Harvest
         </Button>
       </Stack>
     </div>
