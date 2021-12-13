@@ -24,6 +24,7 @@ module.exports = {
     hardhat: {
       forking: {
         url: "https://rpc.ftm.tools/",
+        accounts: [devAccount],
       },
       mining: {
         auto: true,
