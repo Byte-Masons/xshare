@@ -28,28 +28,20 @@ export default function FarmWrapper() {
   };
 
   useEffect(() => {
-    if (state.tshareBalance == null) {
-      async function fetchTShareBalance() {
-        try {
-          const balance = await getTShareBalance();
-          setState({ ...state, tshareBalance: Number(balance) });
-        } catch (error) {
-          displayError(error, onError);
-        }
+    async function fetchBalance() {
+      try {
+        const tshareBalance = await getTShareBalance();
+        const userVaultBalance = await getUserVaultBalance();
+        setState({
+          ...state,
+          tshareBalance: Number(tshareBalance),
+          vaultBalance: Number(userVaultBalance),
+        });
+      } catch (error) {
+        displayError(error, onError);
       }
-      fetchTShareBalance();
     }
-    if (state.vaultBalance == null) {
-      async function fetchVaultBalance() {
-        try {
-          const balance = await getUserVaultBalance();
-          setState({ ...state, vaultBalance: Number(balance) });
-        } catch (error) {
-          displayError(error, onError);
-        }
-      }
-      fetchVaultBalance();
-    }
+    fetchBalance();
   }, []);
 
   return (
