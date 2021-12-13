@@ -5,6 +5,7 @@ import Stack from "@mui/material/Stack";
 import { hasApprovedTShare, approveTShare } from "../api/tshare";
 import { depositTShare } from "../api/vault";
 import useToastContext from "../hooks/UseToastContext";
+import { displayError } from "../helpers/error";
 
 export default function Stake({ tshareBalance, vaultBalance }) {
   const [state, setState] = useState({
@@ -21,7 +22,7 @@ export default function Stake({ tshareBalance, vaultBalance }) {
           const hasApproved = await hasApprovedTShare();
           setState({ ...state, hasApprovedTShare: hasApproved });
         } catch (error) {
-          onError(error.data.message);
+          displayError(error, onError);
         }
       }
       fetchHasApproved();
@@ -47,7 +48,7 @@ export default function Stake({ tshareBalance, vaultBalance }) {
         onSuccess("Staking succeeded");
       }
     } catch (error) {
-      onError(error.data.message);
+      displayError(error, onError);
     }
   };
 
@@ -61,7 +62,7 @@ export default function Stake({ tshareBalance, vaultBalance }) {
         onSuccess("Approval succeeded");
       }
     } catch (error) {
-      onError(error.data.message);
+      displayError(error, onError);
     }
   };
 

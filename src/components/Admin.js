@@ -5,8 +5,13 @@ import Stack from "@mui/material/Stack";
 import { getBlockTimestamp } from "../api/blockchain";
 import { harvest } from "../api/strategy";
 import { allocateSeigniorage, getEpoch, getNextEpochPoint } from "../api/tomb";
-import { getVaultBalance, getAvailableVaultBalance } from "../api/vault";
+import {
+  getVaultBalance,
+  getAvailableVaultBalance,
+  addToWhitelist,
+} from "../api/vault";
 import useToastContext from "../hooks/UseToastContext";
+import { displayError } from "../helpers/error";
 
 export default function Admin({}) {
   const [state, setState] = useState({
@@ -15,6 +20,7 @@ export default function Admin({}) {
     nextEpochPoint: null,
     vaultBalance: null,
     availableVaultBalance: null,
+    addressToWhitelist: "",
   });
 
   const { onSuccess, onError } = useToastContext();
@@ -41,7 +47,7 @@ export default function Admin({}) {
         availableVaultBalance,
       });
     } catch (error) {
-      onError(error.data.message);
+      displayError(error, onError);
     }
   };
 
@@ -53,7 +59,7 @@ export default function Admin({}) {
         onSuccess("Harvest succeeded");
       }
     } catch (error) {
-      onError(error.data.message);
+      displayError(error, onError);
     }
   };
 
@@ -65,8 +71,14 @@ export default function Admin({}) {
         onSuccess("allocateSeigniorage succeeded");
       }
     } catch (error) {
-      onError(error.data.message);
+      displayError(error, onError);
     }
+  };
+
+  const handleAddressToWhitelistChange = (event) => {
+    const newValue = event.target.value;
+    console.log(newValue);
+    setState({ ...state, addressToWhitelist: newValue });
   };
 
   return (
@@ -108,6 +120,24 @@ export default function Admin({}) {
         <Button variant="outlined" onClick={update}>
           Update data
         </Button>
+      </Stack>
+      <Stack spacing={2} direction="row">
+        <div style={{ lineHeight: 3.2 }}>Address to whitelist:</div>
+        <TextField
+          id="outlined-basic"
+          label="Address"
+          variant="outlined"
+          type="string"
+          value={state.addressToWhitelist}
+          onChange={handleAddressToWhitelistChange}
+        />
+        {/* <Button
+          variant="outlined"
+          onClick={handleApprove}
+          disabled={state.hasApprovedTShare}
+        >
+          Add to whitelist
+        </Button> */}
       </Stack>
     </div>
   );

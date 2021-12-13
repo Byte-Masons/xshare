@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { withdrawTShare } from "../api/vault";
 import useToastContext from "../hooks/UseToastContext";
+import { displayError } from "../helpers/error";
 
 export default function Unstake({ tshareBalance, vaultBalance }) {
   const [state, setState] = useState({
@@ -31,7 +32,7 @@ export default function Unstake({ tshareBalance, vaultBalance }) {
         onSuccess("Unstaking succeeded");
       }
     } catch (error) {
-      onError(error.data.message);
+      displayError(error, onError);
     }
   };
 
