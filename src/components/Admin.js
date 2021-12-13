@@ -81,6 +81,10 @@ export default function Admin({}) {
     setState({ ...state, addressToWhitelist: newValue });
   };
 
+  const handleAddToWhitelist = async () => {
+    await addToWhitelist(state.addressToWhitelist);
+  };
+
   return (
     <div>
       <Stack spacing={2} direction="row">
@@ -131,13 +135,9 @@ export default function Admin({}) {
           value={state.addressToWhitelist}
           onChange={handleAddressToWhitelistChange}
         />
-        {/* <Button
-          variant="outlined"
-          onClick={handleApprove}
-          disabled={state.hasApprovedTShare}
-        >
+        <Button variant="outlined" onClick={handleAddToWhitelist}>
           Add to whitelist
-        </Button> */}
+        </Button>
       </Stack>
     </div>
   );
