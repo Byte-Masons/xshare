@@ -11,6 +11,7 @@ import Masons from "./Masons";
 import { getTShareBalance } from "../api/tshare";
 import { getUserVaultBalance } from "../api/vault";
 import useToastContext from "../hooks/UseToastContext";
+import { displayError } from "../helpers/error";
 
 export default function FarmWrapper() {
   const [state, setState] = useState({
@@ -33,7 +34,7 @@ export default function FarmWrapper() {
           const balance = await getTShareBalance();
           setState({ ...state, tshareBalance: Number(balance) });
         } catch (error) {
-          onError(error.data.message);
+          displayError(error, onError);
         }
       }
       fetchTShareBalance();
@@ -44,7 +45,7 @@ export default function FarmWrapper() {
           const balance = await getUserVaultBalance();
           setState({ ...state, vaultBalance: Number(balance) });
         } catch (error) {
-          onError(error.data.message);
+          displayError(error, onError);
         }
       }
       fetchVaultBalance();

@@ -32,3 +32,8 @@ export const withdrawTShare = async (amount) => {
   const contract = getReaperVaultContract();
   return await contract.withdraw(amount);
 };
+
+export const addToWhitelist = async (address) => {
+  const contract = getReaperVaultContract();
+  return await contract.setAddressInWhitelist(address, true);
+};
