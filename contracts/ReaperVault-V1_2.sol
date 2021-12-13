@@ -1190,6 +1190,12 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
     mapping(address => uint256) public cumulativeDeposits;
     mapping(address => uint256) public cumulativeWithdrawals;
 
+    /**
+     * @dev Used to store the addresses allowed to access the vault
+     */
+    mapping(address => bool) public whitelist;
+    bool isWhiteListEnabled = true;
+
     event NewStratCandidate(address implementation);
     event UpgradeStrat(address implementation);
     event TermsAccepted(address user);
@@ -1218,6 +1224,17 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
         approvalDelay = _approvalDelay;
         constructionTime = block.timestamp;
         depositFee = _depositFee;
+    }
+
+    /**
+     * @dev Throws if called by any account that is not whitelisted, while whitelist is enabled
+     */
+    modifier onlyWhitelisted() {
+        require(
+            isWhiteListEnabled == false || whitelist[msg.sender] == true,
+            "Caller is not whitelisted"
+        );
+        _;
     }
 
     /**
@@ -1296,7 +1313,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * @notice to ensure 'owner' can't sneak an implementation past the timelock,
      * it's set to true
      */
-    function deposit(uint256 _amount) public nonReentrant {
+    function deposit(uint256 _amount) public nonReentrant onlyWhitelisted {
         require(_amount > 0, "please provide amount");
         uint256 _pool = balance();
         uint256 _before = token.balanceOf(address(this));
@@ -1339,7 +1356,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * from the strategy and pay up the token holder. A proportional number of IOU
      * tokens are burned in the process.
      */
-    function withdraw(uint256 _shares) public nonReentrant {
+    function withdraw(uint256 _shares) public nonReentrant onlyWhitelisted {
         require(_shares > 0, "please provide amount");
         uint256 r = (balance().mul(_shares)).div(totalSupply());
         _burn(msg.sender, _shares);
@@ -1430,5 +1447,28 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
 
         uint256 amount = IERC20(_token).balanceOf(address(this));
         IERC20(_token).safeTransfer(msg.sender, amount);
+    }
+
+    /**
+     * @dev Sets an account in the whitelist to true or false.
+     * @param _account address to be modified in the whitelist.
+     * @param _isWhitelisted if the address should be whitelisted or not.
+     */
+    function setAddressInWhitelist(address _account, bool _isWhitelisted)
+        external
+        onlyOwner
+    {
+        whitelist[_account] = _isWhitelisted;
+    }
+
+    /**
+     * @dev Sets if the whitelist is enabled
+     * @param _isWhiteListEnabled if the whitelist should be enabled
+     */
+    function setIsWhiteListEnabled(bool _isWhiteListEnabled)
+        external
+        onlyOwner
+    {
+        isWhiteListEnabled = _isWhiteListEnabled;
     }
 }

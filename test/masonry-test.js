@@ -1,7 +1,14 @@
-const { expect } = require("chai");
-const { waffle } = require("hardhat");
+// const { expect } = require("chai");
+// const { waffle } = require("hardhat");
+// const pools = require("../pools.json");
+// const hre = require("hardhat");
+
 const pools = require("../pools.json");
 const hre = require("hardhat");
+const chai = require("chai");
+const { solidity } = require("ethereum-waffle");
+chai.use(solidity);
+const { expect } = chai;
 
 const moveTimeForward = async (seconds) => {
   await network.provider.send("evm_increaseTime", [seconds]);
@@ -19,7 +26,7 @@ const moveForwardNEpochs = async (n, treasury, harvest, epochAction) => {
     try {
       await treasury.allocateSeigniorage();
     } catch (error) {
-      console.log('lol');
+      console.log("lol");
     }
     const tombSupplyAfter = await treasury.getTombCirculatingSupply();
     console.log(`tombSupplyAfter: ${tombSupplyAfter}`);
@@ -33,18 +40,23 @@ const moveForwardNEpochs = async (n, treasury, harvest, epochAction) => {
   }
 };
 
-const moveForwardNEpochsHarvestEveryHour = async (n, treasury, harvest, epochAction) => {
+const moveForwardNEpochsHarvestEveryHour = async (
+  n,
+  treasury,
+  harvest,
+  epochAction
+) => {
   const hour = 3600;
   const epoch = 1 * hour;
   console.log("moveForwardNEpochs");
-  for (let index = 0; index < n*6; index++) {
+  for (let index = 0; index < n * 6; index++) {
     await moveTimeForward(epoch);
     const tombSupplyBefore = await treasury.getTombCirculatingSupply();
     console.log(`tombSupplyBefore: ${tombSupplyBefore}`);
     try {
       await treasury.allocateSeigniorage();
     } catch (error) {
-      console.log('lol');
+      console.log("lol");
     }
     const tombSupplyAfter = await treasury.getTombCirculatingSupply();
     console.log(`tombSupplyAfter: ${tombSupplyAfter}`);
@@ -148,6 +160,8 @@ describe("Vaults", function () {
       0
     );
     console.log("vault");
+
+    await vault.setIsWhiteListEnabled(false);
 
     strategy = await Strategy.deploy(vault.address, treasury.address);
     console.log("strategy");
@@ -336,7 +350,7 @@ describe("Vaults", function () {
         try {
           await tombTreasury.allocateSeigniorage();
         } catch (error) {
-          console.log('lol');
+          console.log("lol");
         }
         await vault.connect(tshareWhale).deposit(whaleDepositAmount);
         await moveTimeForward(2);
@@ -356,10 +370,14 @@ describe("Vaults", function () {
         harvest,
         whaleDeposit
       );
-      
-      let currentDate = await ethers.provider.getBlock().then(e => e.timestamp);
-      let nextEpochPoint = ethers.BigNumber.from(await tombTreasury.nextEpochPoint()).toString();
-      console.log("currentDate: ",currentDate);
+
+      let currentDate = await ethers.provider
+        .getBlock()
+        .then((e) => e.timestamp);
+      let nextEpochPoint = ethers.BigNumber.from(
+        await tombTreasury.nextEpochPoint()
+      ).toString();
+      console.log("currentDate: ", currentDate);
       console.log("nextEpochPoint: ", nextEpochPoint);
       // await moveForwardNEpochs(1, tombTreasury, harvest);
       await moveTimeForward(2);
@@ -383,7 +401,36 @@ describe("Vaults", function () {
       console.log(
         `startingBalanceMinusWithdrawFee: ${startingBalanceMinusWithdrawFee}`
       );
-      expect(parseInt(userBalanceAfterWithdraw)).to.be.greaterThan(parseInt(userBalance - withdrawFee));
+      expect(parseInt(userBalanceAfterWithdraw)).to.be.greaterThan(
+        parseInt(userBalance - withdrawFee)
+      );
+    });
+    it("should block deposits and withdrawals when whitelist is enabled", async function () {
+      await vault.setIsWhiteListEnabled(true);
+      const depositAmount = ethers.utils.parseEther(".0001");
+      await expect(vault.connect(self).deposit(depositAmount)).to.be.reverted;
+    });
+    it("should allow whitelisted address when whitelisting is enabled", async function () {
+      await vault.setIsWhiteListEnabled(true);
+      await vault.connect(owner).setAddressInWhitelist(selfAddress, true);
+      const depositAmount = ethers.utils.parseEther(".0001");
+      await expect(vault.connect(self).deposit(depositAmount)).to.not.be
+        .reverted;
+    });
+    it("onlyOwner should be able to set if whitelist is enabled", async function () {
+      await expect(vault.connect(self).setIsWhiteListEnabled(true)).to.be
+        .reverted;
+
+      await expect(vault.connect(owner).setIsWhiteListEnabled(true)).to.not.be
+        .reverted;
+    });
+    it("onlyOwner should be able to set whitelist", async function () {
+      await expect(vault.connect(self).setAddressInWhitelist(selfAddress, true))
+        .to.be.reverted;
+
+      await expect(
+        vault.connect(owner).setAddressInWhitelist(selfAddress, true)
+      ).to.be.not.reverted;
     });
   });
 });
