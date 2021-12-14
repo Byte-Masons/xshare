@@ -79,6 +79,7 @@ async function main() {
   sleep(sleepTime);
   await strategy.setMasons(masonsAddress);
   console.log("set masons");
+  sleep(sleepTime);
   await initializeVault(vaultAddress, strategyAddress);
 }
 
