@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/TShareCompounder/static/css/main.7d180cbf.chunk.css",
+    "main.js": "/TShareCompounder/static/js/main.0e9f74e9.chunk.js",
+    "main.js.map": "/TShareCompounder/static/js/main.0e9f74e9.chunk.js.map",
+    "runtime-main.js": "/TShareCompounder/static/js/runtime-main.2813f53a.js",
+    "runtime-main.js.map": "/TShareCompounder/static/js/runtime-main.2813f53a.js.map",
+    "static/js/2.a87fec00.chunk.js": "/TShareCompounder/static/js/2.a87fec00.chunk.js",
+    "static/js/2.a87fec00.chunk.js.map": "/TShareCompounder/static/js/2.a87fec00.chunk.js.map",
+    "static/js/3.b946d224.chunk.js": "/TShareCompounder/static/js/3.b946d224.chunk.js",
+    "static/js/3.b946d224.chunk.js.map": "/TShareCompounder/static/js/3.b946d224.chunk.js.map",
+    "index.html": "/TShareCompounder/index.html",
+    "static/css/main.7d180cbf.chunk.css.map": "/TShareCompounder/static/css/main.7d180cbf.chunk.css.map",
+    "static/js/2.a87fec00.chunk.js.LICENSE.txt": "/TShareCompounder/static/js/2.a87fec00.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.2813f53a.js",
+    "static/js/2.a87fec00.chunk.js",
+    "static/css/main.7d180cbf.chunk.css",
+    "static/js/main.0e9f74e9.chunk.js"
+  ]
+}
