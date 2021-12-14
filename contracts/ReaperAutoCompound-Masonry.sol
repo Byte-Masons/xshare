@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-import "hardhat/console.sol";
 pragma solidity ^0.6.0;
 
 /*
@@ -1625,6 +1624,10 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
             balanceOfStakedToken().add(
                 IMason(masons[_getCurrentMasonIndex()]).balanceOf()
             );
+    }
+
+    function canWithdraw() external view returns (bool) {
+        return now > IMason(masons[_getCurrentMasonIndex()]).nextEpochPoint() - depositTimeFrame;
     }
 
     /**

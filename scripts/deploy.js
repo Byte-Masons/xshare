@@ -12,6 +12,7 @@ async function deployVault(timelock, depositFee) {
     timelock,
     depositFee
   );
+  await vault.deployed();
   console.log(`Vault ${vaultName} deployed to ${vault.address}`);
   return vault;
 }
@@ -21,6 +22,7 @@ async function deployStrategy(vaultAddress, treasury) {
   console.log(vaultAddress);
   console.log(treasury);
   const strategy = await Strategy.deploy(vaultAddress, treasury);
+  await strategy.deployed();
   console.log(`Strategy deployed to ${strategy.address}`);
   return strategy;
 }
@@ -29,12 +31,11 @@ async function deployMasons(strategy) {
   Mason = await ethers.getContractFactory("Mason");
   const nrOfMasons = 6;
   const masonsAddress = [];
-  const sleepTime = 30000;
   for (let i = 0; i < nrOfMasons; i++) {
     const mason = await Mason.deploy(strategy);
+    await mason.deployed();
     masonsAddress.push(mason.address);
     console.log(`mason deployed at ${mason.address}`);
-    sleep(sleepTime);
   }
   return masonsAddress;
 }
@@ -68,18 +69,13 @@ module.exports = {
 
 async function main() {
   const vault = await deployVault(432000, 0);
-  const sleepTime = 30000;
-  sleep(sleepTime);
   const vaultAddress = vault.address;
   const treasury = "0x0e7c5313E9BB80b654734d9b7aB1FB01468deE3b";
   const strategy = await deployStrategy(vaultAddress, treasury);
-  sleep(sleepTime);
   const strategyAddress = strategy.address;
   const masonsAddress = await deployMasons(strategyAddress);
-  sleep(sleepTime);
   await strategy.setMasons(masonsAddress);
   console.log("set masons");
-  sleep(sleepTime);
   await initializeVault(vaultAddress, strategyAddress);
 }
 
