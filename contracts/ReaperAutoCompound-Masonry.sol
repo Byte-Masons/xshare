@@ -1433,7 +1433,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * It gets called whenever someone deposits in the strategy's vault contract.
      * It deposits {stakedToken} in the masonry to farm {rewardToken}
      */
-    function deposit() public whenNotPaused onlyVault {
+    function deposit() public whenNotPaused {
         require(masons.length == 6, "The masons array must be initialized");
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         address currentMason = masons[_getCurrentMasonIndex()];
