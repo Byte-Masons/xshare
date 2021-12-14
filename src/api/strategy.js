@@ -1,6 +1,6 @@
 import { getContract } from "./common";
 const strategyABI = require("../abi/ReaperAutoCompound-Masonry.json");
-const strategyAddress = "0x162A433068F51e18b7d13932F27e66a3f99E6890";
+const strategyAddress = "0xAC557425Fbd38361196eE5B5641d551e07Bd88dc";
 let strategyContract = null;
 
 const getStrategyContract = () => {
