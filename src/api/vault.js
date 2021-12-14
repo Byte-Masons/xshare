@@ -3,7 +3,7 @@ import { getContract } from "./common";
 import { getBalance } from "./tshare";
 const reaperVaultABI = require("../abi/ReaperVault.json");
 let reaperVaultContract = null;
-export const vaultAddress = "0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07";
+export const vaultAddress = "0x0e7c5313E9BB80b654734d9b7aB1FB01468deE3b";
 
 export const getReaperVaultContract = () =>
   getContract(reaperVaultContract, vaultAddress, reaperVaultABI);

@@ -1642,6 +1642,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         masons = _masons;
     }
 
+    function setDepositTimeFrame(uint256 _depositTimeFrame) external onlyOwner {
+        require(_depositTimeFrame < 4 hours, "depositTimeFrame too big");
+        depositTimeFrame = _depositTimeFrame;
+    }
+
     /**
      * @dev Function that has to be called as part of strat migration. It sends all the available funds back to the
      * vault, ready to be migrated to the new strat.

@@ -560,6 +560,9 @@ library SafeERC20 {
     }
 }
 
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 interface IMasonry {
     function stake(uint256 _amount) external;
 
@@ -611,7 +614,7 @@ interface IMason {
  * @dev A wrapper for the tomb Masonry contract that allows the strategy to have multiple
  * Masons, and therefore multiple separate timelocks in a rotation.
  */
-contract Mason is IMason {
+contract Mason is IMason, Ownable {
     using SafeERC20 for IERC20;
     address public masonry =
         address(0x8764DE60236C5843D9faEB1B638fbCE962773B67); // The tomb Masonry contract
@@ -619,24 +622,29 @@ contract Mason is IMason {
     address public tomb = address(0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7); //TOMB
     address public strategy;
 
+    modifier onlyAuthorized() {
+        require(owner() == _msgSender() || strategy == _msgSender(), 'caller is not authorized');
+        _;
+    }
+
     constructor(address _strategy) public {
         strategy = _strategy;
         _giveAllowances();
     }
 
-    function stake(uint256 _amount) external override {
+    function stake(uint256 _amount) external override onlyAuthorized {
         IMasonry(masonry).stake(_amount);
     }
 
-    function withdraw(uint256 _amount) external override {
+    function withdraw(uint256 _amount) external override onlyAuthorized {
         IMasonry(masonry).withdraw(_amount);
     }
 
-    function claimReward() external override {
+    function claimReward() external override onlyAuthorized {
         IMasonry(masonry).claimReward();
     }
 
-    function exit() external override {
+    function exit() external override onlyAuthorized {
         IMasonry(masonry).exit();
     }
 
