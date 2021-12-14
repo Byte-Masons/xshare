@@ -20,9 +20,9 @@ npx hardhat run --network opera scripts/initializeVault.js <--- If the initializ
 
 # Deployed address
 
-Vault deployed to 0x596cDF5D33486b035e8482688c638E7dcAf25a7b
+Vault deployed to 0x6A4146C7E6eFF0eAf2e3c0bCC2bd991707De4264
 
-Strategy deployed to 0xAC557425Fbd38361196eE5B5641d551e07Bd88dc
+Strategy deployed to 0x1744BD10eD44E5c5C4EceE8080f720009AceB8eb
 
 mason1 deployed at 0x8ad2f87EDD0260d68036634Da697fB248FbD0818
 
