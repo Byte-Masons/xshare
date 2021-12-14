@@ -1,15 +1,5 @@
 const pools = require("../pools.json");
 
-function speedUpBlockTime() {
-  console.log("speedUpBlockTime");
-  const second = 1000;
-  const secondsToIncrease = 360;
-  setInterval(async () => {
-    console.log("send(evm_increaseTime, ...");
-    await network.provider.send("evm_increaseTime", [secondsToIncrease]);
-  }, second);
-}
-
 async function deployVault(timelock, depositFee) {
   console.log("deploying vault");
   const i = 0;
@@ -39,10 +29,12 @@ async function deployMasons(strategy) {
   Mason = await ethers.getContractFactory("Mason");
   const nrOfMasons = 6;
   const masonsAddress = [];
+  const sleepTime = 30000;
   for (let i = 0; i < nrOfMasons; i++) {
     const mason = await Mason.deploy(strategy);
     masonsAddress.push(mason.address);
     console.log(`mason deployed at ${mason.address}`);
+    sleep(sleepTime);
   }
   return masonsAddress;
 }
@@ -56,21 +48,35 @@ async function initializeVault(vaultAddress, strategyAddress) {
   return receipt;
 }
 
+function sleep(milliseconds) {
+  console.log("Calling sleep");
+  const date = Date.now();
+  let currentDate = null;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
+  console.log("Sleep finished");
+}
+
 module.exports = {
   deployVault,
   deployStrategy,
   deployMasons,
   initializeVault,
-  speedUpBlockTime,
+  sleep,
 };
 
 async function main() {
   const vault = await deployVault(432000, 0);
+  const sleepTime = 30000;
+  sleep(sleepTime);
   const vaultAddress = vault.address;
   const treasury = "0x0e7c5313E9BB80b654734d9b7aB1FB01468deE3b";
   const strategy = await deployStrategy(vaultAddress, treasury);
+  sleep(sleepTime);
   const strategyAddress = strategy.address;
   const masonsAddress = await deployMasons(strategyAddress);
+  sleep(sleepTime);
   await strategy.setMasons(masonsAddress);
   console.log("set masons");
   await initializeVault(vaultAddress, strategyAddress);
