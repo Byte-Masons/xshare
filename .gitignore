@@ -32,4 +32,8 @@ typechain
 cache
 artifacts
 
+# VS Code
+.vscode
 
+# secrets
+secrets.json
