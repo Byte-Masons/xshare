@@ -10,6 +10,14 @@ yarn start <- start front-end
 
 Change const vaultAddress = "0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07"; to your deployed vault address
 
+# Run deploy scripts
+
+npx hardhat run --network opera scripts/deploy.js
+
+npx hardhat run --network opera scripts/setMasons.js <--- If the setMason call fails in deploy script
+
+npx hardhat run --network opera scripts/initializeVault.js <--- If the initializeVault call fails in deploy script
+
 # Deployed address
 
 Vault deployed to 0x596cDF5D33486b035e8482688c638E7dcAf25a7b
