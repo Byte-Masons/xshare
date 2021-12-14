@@ -20,18 +20,18 @@ npx hardhat run --network opera scripts/initializeVault.js <--- If the initializ
 
 # Deployed address
 
-Vault deployed to 0x6A4146C7E6eFF0eAf2e3c0bCC2bd991707De4264
+Vault deployed to 0xb40e774a627fC5Ca4dD628d997B18242da540B32
 
-Strategy deployed to 0x1744BD10eD44E5c5C4EceE8080f720009AceB8eb
+Strategy deployed to 0xb203A4ab80d84982602e413346724E83118ACb17
 
-mason1 deployed at 0x8ad2f87EDD0260d68036634Da697fB248FbD0818
+mason1 deployed at 0xaA8e0626e64817DcA2968A5535e26De642855caF
 
-mason2 deployed at 0xe0D89392ecb1e26e48E9D91738Bf0Bf31192B5f1
+mason2 deployed at 0xcdCF7a84d7B82229958c1af1cD8EAc63703A2E3f
 
-mason3 deployed at 0x0C13a59a95da229562eF8Fa47C9B117b2F3C51Bb
+mason3 deployed at 0xFD35c7921f43f596116638Ff9af013AefC7879f8
 
-mason4 deployed at 0xBe889866475055E2D216716da80D976Bfc8D4c1F
+mason4 deployed at 0x0BAe10A87623Ed8e31223DD10754201E29BF7fC0
 
-mason5 deployed at 0x327BB5bC0ECf3Ca06Ae7e1d620489B12DecFFE6c
+mason5 deployed at 0x52e0e794B16CbEb31ab82C1f9713e973cC29A3Cc
 
-mason6 deployed at 0xb4c3c70C0A0001923fbADEe5AB20086D671eE225
+mason6 deployed at 0xa4Fa4752618B545F6E3f92eD34C863522815d356
