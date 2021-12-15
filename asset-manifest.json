@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/xshare/static/css/main.7d180cbf.chunk.css",
-    "main.js": "/xshare/static/js/main.08f4b105.chunk.js",
-    "main.js.map": "/xshare/static/js/main.08f4b105.chunk.js.map",
+    "main.js": "/xshare/static/js/main.f5ddc476.chunk.js",
+    "main.js.map": "/xshare/static/js/main.f5ddc476.chunk.js.map",
     "runtime-main.js": "/xshare/static/js/runtime-main.fca6631d.js",
     "runtime-main.js.map": "/xshare/static/js/runtime-main.fca6631d.js.map",
-    "static/js/2.03bb47d6.chunk.js": "/xshare/static/js/2.03bb47d6.chunk.js",
-    "static/js/2.03bb47d6.chunk.js.map": "/xshare/static/js/2.03bb47d6.chunk.js.map",
+    "static/js/2.1849b24d.chunk.js": "/xshare/static/js/2.1849b24d.chunk.js",
+    "static/js/2.1849b24d.chunk.js.map": "/xshare/static/js/2.1849b24d.chunk.js.map",
     "static/js/3.b946d224.chunk.js": "/xshare/static/js/3.b946d224.chunk.js",
     "static/js/3.b946d224.chunk.js.map": "/xshare/static/js/3.b946d224.chunk.js.map",
     "index.html": "/xshare/index.html",
     "static/css/main.7d180cbf.chunk.css.map": "/xshare/static/css/main.7d180cbf.chunk.css.map",
-    "static/js/2.03bb47d6.chunk.js.LICENSE.txt": "/xshare/static/js/2.03bb47d6.chunk.js.LICENSE.txt"
+    "static/js/2.1849b24d.chunk.js.LICENSE.txt": "/xshare/static/js/2.1849b24d.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.fca6631d.js",
-    "static/js/2.03bb47d6.chunk.js",
+    "static/js/2.1849b24d.chunk.js",
     "static/css/main.7d180cbf.chunk.css",
-    "static/js/main.08f4b105.chunk.js"
+    "static/js/main.f5ddc476.chunk.js"
   ]
 }
