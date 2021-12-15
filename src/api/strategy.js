@@ -19,3 +19,8 @@ export const getMasons = async () => {
   }
   return masons;
 };
+
+export const getCanWithdraw = async () => {
+  const contract = getStrategyContract();
+  return await contract.canWithdraw();
+};
