@@ -26,8 +26,8 @@ export const getCanWithdraw = async () => {
   return !await contract.canWithdraw();
 };
 
-export const getBalanceDuringCurrentEpoch = async () => {
+export const getBalanceOfStakedToken = async () => {
   const contract = getStrategyContract();
-  const balanceDuringCurrentEpoch = parseInt(ethers.BigNumber.from(await contract.balanceDuringCurrentEpoch())._hex,16);
-  return balanceDuringCurrentEpoch;
+  const balanceOfStakedToken = parseInt(ethers.BigNumber.from(await contract.balanceOfStakedToken())._hex,16);
+  return balanceOfStakedToken;
 }

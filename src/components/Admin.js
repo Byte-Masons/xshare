@@ -3,7 +3,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { getBlockTimestamp } from "../api/blockchain";
-import { harvest, getCanWithdraw, getBalanceDuringCurrentEpoch } from "../api/strategy";
+import { harvest, getCanWithdraw, getBalanceOfStakedToken } from "../api/strategy";
 import { allocateSeigniorage, getEpoch, getNextEpochPoint } from "../api/tomb";
 import {
   getVaultBalance,
@@ -41,7 +41,7 @@ export default function Admin({}) {
       const vaultBalance = Number(await getVaultBalance());
       const availableVaultBalance = Number(await getAvailableVaultBalance());
       const canWithdraw = await getCanWithdraw();
-      const balanceDuringCurrentEpoch = await getBalanceDuringCurrentEpoch();
+      const balanceOfStakedToken = await getBalanceOfStakedToken();
       setState({
         ...state,
         currentEpoch,
@@ -50,7 +50,7 @@ export default function Admin({}) {
         vaultBalance,
         availableVaultBalance,
         canWithdraw,
-        balanceDuringCurrentEpoch,
+        balanceOfStakedToken,
       });
     } catch (error) {
       displayError(error, onError);
@@ -118,7 +118,7 @@ export default function Admin({}) {
       </Stack>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>
-          Withdrawable amount: {state.balanceDuringCurrentEpoch}
+          Withdrawable amount: {state.balanceOfStakedToken}
         </div>
       </Stack>
       <Stack spacing={2} direction="row">
