@@ -3,7 +3,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { getBlockTimestamp } from "../api/blockchain";
-import { harvest, getCanWithdraw } from "../api/strategy";
+import { harvest, getCanWithdraw, getBalanceDuringCurrentEpoch } from "../api/strategy";
 import { allocateSeigniorage, getEpoch, getNextEpochPoint } from "../api/tomb";
 import {
   getVaultBalance,
@@ -22,6 +22,7 @@ export default function Admin({}) {
     availableVaultBalance: null,
     addressToWhitelist: "",
     canWithdraw: null,
+    balanceDuringCurrentEpoch: null
   });
 
   const { onSuccess, onError } = useToastContext();
@@ -40,6 +41,7 @@ export default function Admin({}) {
       const vaultBalance = Number(await getVaultBalance());
       const availableVaultBalance = Number(await getAvailableVaultBalance());
       const canWithdraw = await getCanWithdraw();
+      const balanceDuringCurrentEpoch = await getBalanceDuringCurrentEpoch();
       setState({
         ...state,
         currentEpoch,
@@ -48,6 +50,7 @@ export default function Admin({}) {
         vaultBalance,
         availableVaultBalance,
         canWithdraw,
+        balanceDuringCurrentEpoch,
       });
     } catch (error) {
       displayError(error, onError);
@@ -111,6 +114,11 @@ export default function Admin({}) {
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>
           Vault available TVL: {state.availableVaultBalance}
+        </div>
+      </Stack>
+      <Stack spacing={2} direction="row">
+        <div style={{ lineHeight: 3.2 }}>
+          Withdrawable amount: {state.balanceDuringCurrentEpoch}
         </div>
       </Stack>
       <Stack spacing={2} direction="row">

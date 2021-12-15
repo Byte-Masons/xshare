@@ -1627,7 +1627,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     }
 
     function canWithdraw() external view returns (bool) {
-        return now > IMason(masons[_getCurrentMasonIndex()]).nextEpochPoint() - depositTimeFrame;
+        return now < IMason(masons[_getCurrentMasonIndex()]).nextEpochPoint() - depositTimeFrame;
     }
 
     /**
