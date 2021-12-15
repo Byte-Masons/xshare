@@ -23,12 +23,11 @@ export const getMasons = async () => {
 
 export const getCanWithdraw = async () => {
   const contract = getStrategyContract();
-  return await !contract.canWithdraw();
+  return !await contract.canWithdraw();
 };
 
 export const getBalanceDuringCurrentEpoch = async () => {
   const contract = getStrategyContract();
   const balanceDuringCurrentEpoch = parseInt(ethers.BigNumber.from(await contract.balanceDuringCurrentEpoch())._hex,16);
-  console.log(balanceDuringCurrentEpoch);
   return balanceDuringCurrentEpoch;
 }

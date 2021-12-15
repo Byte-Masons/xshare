@@ -35,3 +35,10 @@ mason4 deployed at 0x0BAe10A87623Ed8e31223DD10754201E29BF7fC0
 mason5 deployed at 0x52e0e794B16CbEb31ab82C1f9713e973cC29A3Cc
 
 mason6 deployed at 0xa4Fa4752618B545F6E3f92eD34C863522815d356
+
+// TODO before live
+in api/strategy, use the value canWithdraw() returns instead of the opposite
+export const getCanWithdraw = async () => {
+  const contract = getStrategyContract();
+  return await contract.canWithdraw();
+};
