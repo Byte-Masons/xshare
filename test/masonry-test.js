@@ -10,9 +10,55 @@ const { solidity } = require("ethereum-waffle");
 chai.use(solidity);
 const { expect } = chai;
 
+const getBlockNumber = async () => await ethers.provider.getBlockNumber();
+
+const getCurrentBlock = async () =>
+  await ethers.provider.getBlock(await getBlockNumber());
+
+const getBlockTimestamp = async () => (await getCurrentBlock()).timestamp;
+
 const moveTimeForward = async (seconds) => {
   await network.provider.send("evm_increaseTime", [seconds]);
   await network.provider.send("evm_mine");
+};
+
+const getMason = async (masonAddress, Mason) =>
+  await Mason.attach(masonAddress);
+
+const moveToStartOfEpoch = async (mason, treasury) => {
+  const nextEpoch = await mason.nextEpochPoint();
+  console.log(`nextEpoch: ${nextEpoch}`);
+
+  const currentBlockTimestamp = await getBlockTimestamp();
+  const timeToNextEpoch = nextEpoch - currentBlockTimestamp;
+  console.log(currentBlockTimestamp);
+  console.log(nextEpoch - currentBlockTimestamp);
+  await moveTimeForward(timeToNextEpoch + 1);
+  const nextEpochAfter = await mason.nextEpochPoint();
+  console.log(`nextEpochAfter: ${nextEpochAfter}`);
+  await treasury.allocateSeigniorage();
+
+  const currentBlockTimestampAfter = await getBlockTimestamp();
+  console.log(currentBlockTimestampAfter);
+  console.log(nextEpochAfter - currentBlockTimestampAfter);
+};
+
+const moveToEndOfEpoch = async (mason) => {
+  const nextEpoch = await mason.nextEpochPoint();
+  console.log(`nextEpoch: ${nextEpoch}`);
+
+  const currentBlockTimestamp = await getBlockTimestamp();
+  const timeToNextEpoch = nextEpoch - currentBlockTimestamp;
+  console.log(currentBlockTimestamp);
+  console.log(nextEpoch - currentBlockTimestamp);
+  const tenMinutes = 10 * 60;
+  await moveTimeForward(timeToNextEpoch - tenMinutes);
+  const nextEpochAfter = await mason.nextEpochPoint();
+  console.log(`nextEpochAfter: ${nextEpochAfter}`);
+
+  const currentBlockTimestampAfter = await getBlockTimestamp();
+  console.log(currentBlockTimestampAfter);
+  console.log(nextEpochAfter - currentBlockTimestampAfter);
 };
 
 const moveForwardNEpochs = async (n, treasury, harvest, epochAction) => {
@@ -176,16 +222,16 @@ describe("Vaults", function () {
       }
       return masonsAddress;
     };
-    const masonsAddress = await deployMasons();
+    masons = await deployMasons();
 
-    await strategy.setMasons(masonsAddress);
+    await strategy.setMasons(masons);
     await vault.initialize(strategy.address);
 
     console.log(`Strategy deployed to ${strategy.address}`);
     console.log(`Vault deployed to ${vault.address}`);
     console.log(`Treasury deployed to ${treasury.address}`);
     console.log(`Masons deployed to: `);
-    masonsAddress.forEach((mason) => {
+    masons.forEach((mason) => {
       console.log(mason);
     });
 
@@ -431,6 +477,32 @@ describe("Vaults", function () {
       await expect(
         vault.connect(owner).setAddressInWhitelist(selfAddress, true)
       ).to.be.not.reverted;
+    });
+    it("Deposits outside of the staking window are kept liquid", async function () {
+      await network.provider.send("evm_mine");
+      const mason = await getMason(masons[0], Mason);
+      const epochBefore = await mason.epoch();
+      console.log(`epochBefore: ${epochBefore}`);
+      await moveToStartOfEpoch(mason, tombTreasury);
+      const depositAmount = 1000;
+      await vault.connect(self).deposit(depositAmount);
+      const balanceOfStakedToken = await strategy.balanceOfStakedToken();
+      const balanceOfPool = await strategy.balanceOfPool();
+      expect(balanceOfStakedToken).to.equal(depositAmount);
+      expect(balanceOfPool).to.equal(0);
+    });
+    it("Deposits inside of the staking window are staked", async function () {
+      await network.provider.send("evm_mine");
+      const mason = await getMason(masons[0], Mason);
+      const epochBefore = await mason.epoch();
+      console.log(`epochBefore: ${epochBefore}`);
+      await moveToEndOfEpoch(mason);
+      const depositAmount = 1000;
+      await vault.connect(self).deposit(depositAmount);
+      const balanceOfStakedToken = await strategy.balanceOfStakedToken();
+      const balanceOfPool = await strategy.balanceOfPool();
+      expect(balanceOfStakedToken).to.equal(0);
+      expect(balanceOfPool).to.equal(depositAmount);
     });
   });
 });
