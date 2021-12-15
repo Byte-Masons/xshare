@@ -504,5 +504,25 @@ describe("Vaults", function () {
       expect(balanceOfStakedToken).to.equal(0);
       expect(balanceOfPool).to.equal(depositAmount);
     });
+    it("Should be able to handle a large number of deposits through the whole cycle", async function () {
+      this.timeout(120000);
+      await network.provider.send("evm_mine");
+      const mason = await getMason(masons[0], Mason);
+      const epochBefore = await mason.epoch();
+      console.log(`epochBefore: ${epochBefore}`);
+      await moveToStartOfEpoch(mason, tombTreasury);
+      const depositAmount = 10000000;
+      const nrOfDeposits = 50;
+      const secondsToIncrease = 60 * 15;
+      for (let index = 0; index < nrOfDeposits; index++) {
+        await vault.connect(tshareWhale).deposit(depositAmount);
+        await moveTimeForward(secondsToIncrease);
+        console.log(`whale deposit loop ${index}`);
+      }
+      const balanceOfStakedToken = await strategy.balanceOfStakedToken();
+      const balanceOfPool = await strategy.balanceOfPool();
+      expect(balanceOfStakedToken).to.equal(0);
+      expect(balanceOfPool).to.equal(depositAmount * nrOfDeposits);
+    });
   });
 });
