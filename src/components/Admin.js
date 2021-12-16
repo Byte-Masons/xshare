@@ -95,7 +95,7 @@ export default function Admin({}) {
     <div>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>
-          Current epoch: {state.currentEpoch}
+          Current epoch: {state.currentEpoch}, current mason index : {state.currentEpoch%6}
         </div>
       </Stack>
       <Stack spacing={2} direction="row">

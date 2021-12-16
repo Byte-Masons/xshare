@@ -66,6 +66,13 @@ export default function Stake({ tshareBalance, vaultBalance }) {
     }
   };
 
+  const setStakeAmount = async () => {
+    setState(
+      {
+        ...state, stakeTShareAmount:1000000000000
+      }
+    );
+  }
   return (
     <div>
       <Stack spacing={2} direction="row">
@@ -73,6 +80,14 @@ export default function Stake({ tshareBalance, vaultBalance }) {
       </Stack>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>Vault shares: {vaultBalance}</div>
+      </Stack>
+      <Stack spacing={2} direction="row">
+        <Button
+          variant="outlined"
+          onClick={setStakeAmount}
+        >
+          Set to 1000000000000
+        </Button>
       </Stack>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>TShare amount to stake:</div>
