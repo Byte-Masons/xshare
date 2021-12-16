@@ -346,6 +346,7 @@ describe("Vaults", function () {
       expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
     });
     it("should be able to harvest", async function () {
+      this.timeout(120000);
       const userBalance = await tshare.balanceOf(selfAddress);
       console.log(`userBalance: ${userBalance}`);
       const depositAmount = ethers.utils.parseEther("0.0001");
@@ -523,6 +524,38 @@ describe("Vaults", function () {
       const balanceOfPool = await strategy.balanceOfPool();
       expect(balanceOfStakedToken).to.equal(0);
       expect(balanceOfPool).to.equal(depositAmount * nrOfDeposits);
+    });
+    it("Should be able to withdraw in another epoch", async function () {
+      this.timeout(120000);
+      await network.provider.send("evm_mine");
+      const mason = await getMason(masons[0], Mason);
+      const epochBefore = await mason.epoch();
+      console.log(`epochBefore: ${epochBefore}`);
+      await moveToStartOfEpoch(mason, tombTreasury);
+      const depositAmount = 10000;
+      await vault.connect(self).deposit(depositAmount);
+      await moveToStartOfEpoch(mason, tombTreasury);
+      const whaleDepositAmount = 20000;
+      await vault.connect(tshareWhale).deposit(whaleDepositAmount);
+      const userBalance = await tshare.balanceOf(selfAddress);
+      await vault.connect(self).withdraw(depositAmount);
+      const userBalanceAfterWithdraw = await tshare.balanceOf(selfAddress);
+      const securityFee = 10;
+      const percentDivisor = 10000;
+      const withdrawFee = (depositAmount * securityFee) / percentDivisor;
+      expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
+      // const depositAmount = 10000000;
+      // const nrOfDeposits = 50;
+      // const secondsToIncrease = 60 * 15;
+      // for (let index = 0; index < nrOfDeposits; index++) {
+      //   await vault.connect(tshareWhale).deposit(depositAmount);
+      //   await moveTimeForward(secondsToIncrease);
+      //   console.log(`whale deposit loop ${index}`);
+      // }
+      // const balanceOfStakedToken = await strategy.balanceOfStakedToken();
+      // const balanceOfPool = await strategy.balanceOfPool();
+      // expect(balanceOfStakedToken).to.equal(0);
+      // expect(balanceOfPool).to.equal(depositAmount * nrOfDeposits);
     });
   });
 });
