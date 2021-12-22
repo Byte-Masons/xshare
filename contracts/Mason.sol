@@ -627,7 +627,7 @@ contract Mason is IMason, Ownable {
         _;
     }
 
-    constructor(address _strategy) public {
+    function setStrategy(address _strategy) external onlyAuthorized{
         strategy = _strategy;
         _giveAllowances();
     }
