@@ -20,25 +20,20 @@ npx hardhat run --network opera scripts/initializeVault.js <--- If the initializ
 
 # Deployed address
 
-Vault deployed to 0xb40e774a627fC5Ca4dD628d997B18242da540B32
+Vault deployed to 0x6020F4Dc7A7A3DabdF4b3b784543EF01f9Eb61Ab
 
-Strategy deployed to 0xb203A4ab80d84982602e413346724E83118ACb17
+Strategy deployed to 0x15A7b695f4670962abd000B33502734f9a899679
 
-mason1 deployed at 0xaA8e0626e64817DcA2968A5535e26De642855caF
+mason1 deployed at 0x842C5474CA8270f62CbD768193ad8D4192001F62
 
-mason2 deployed at 0xcdCF7a84d7B82229958c1af1cD8EAc63703A2E3f
+mason2 deployed at 0x09d49f1102fEAf84106650E8eD444823d98eE190
 
-mason3 deployed at 0xFD35c7921f43f596116638Ff9af013AefC7879f8
+mason3 deployed at 0xa8DDCdA82fCDd0167B3D863c32805eB3E11B1cd8
 
-mason4 deployed at 0x0BAe10A87623Ed8e31223DD10754201E29BF7fC0
+mason4 deployed at 0x736b9162D38D2227609f37b9DA7566F564492aB4
 
-mason5 deployed at 0x52e0e794B16CbEb31ab82C1f9713e973cC29A3Cc
+mason5 deployed at 0xC38bb8C1D9970570ad10B72445D2e5885801BD5A
 
-mason6 deployed at 0xa4Fa4752618B545F6E3f92eD34C863522815d356
+mason6 deployed at 0x66ad5C932F794Ea994f3e16Ac5f2046EF7579383
 
-// TODO before live
-in api/strategy, use the value canWithdraw() returns instead of the opposite
-export const getCanWithdraw = async () => {
-  const contract = getStrategyContract();
-  return await contract.canWithdraw();
-};
+masonDeployer deployed at 0xaf6B77C54eF804D630F25D9862842D2E2b0E3731
