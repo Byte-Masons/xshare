@@ -131,12 +131,14 @@ describe("Vaults", function () {
   let TombTreasury;
   let TShare;
   let Mason;
+  let MasonDeployer;
   let vault;
   let strategy;
   let treasury;
   let tombTreasury;
   let tshare;
   let masons;
+  let masonDeployer;
   let stakedToken = ethers.utils.getAddress(pools.tomb.stake[i].token);
   const tombTreasuryAddress = ethers.utils.getAddress(
     pools.tomb.stake[i].treasury
@@ -190,6 +192,7 @@ describe("Vaults", function () {
     TombTreasury = await ethers.getContractFactory("Treasury");
     TShare = await ethers.getContractFactory("TShare");
     Mason = await ethers.getContractFactory("Mason");
+    MasonDeployer = await ethers.getContractFactory("MasonDeployer");
     console.log("artifacts");
 
     //deploy contracts
@@ -209,7 +212,11 @@ describe("Vaults", function () {
 
     await vault.setIsWhiteListEnabled(false);
 
-    strategy = await Strategy.deploy(vault.address, treasury.address);
+    masonDeployer = await MasonDeployer.deploy();
+    console.log("masonDeployer");
+    strategy = await Strategy.deploy(vault.address, treasury.address,masonDeployer.address);
+    await strategy.deployed();
+    await strategy.setMasons();
     console.log("strategy");
     console.log("deploying Masons");
 
@@ -222,11 +229,20 @@ describe("Vaults", function () {
       }
       return masonsAddress;
     };
-    masons = await deployMasons();
 
-    await strategy.setMasons(masons);
+    const getMasonsAddresses = async () => {
+      const nrOfMasons = 6;
+      const masonsAddress = [];
+      for (let i = 0; i < nrOfMasons; i++) {
+        masonsAddress[i] = await strategy.masons(i);
+        console.log(await strategy.masons(i));
+      }
+      return masonsAddress;
+    }
+    masons = await getMasonsAddresses();
     await vault.initialize(strategy.address);
 
+    console.log(`MasonDeployer deployed to ${masonDeployer.address}`);
     console.log(`Strategy deployed to ${strategy.address}`);
     console.log(`Vault deployed to ${vault.address}`);
     console.log(`Treasury deployed to ${treasury.address}`);
@@ -390,7 +406,24 @@ describe("Vaults", function () {
         )}`
       );
 
-      await moveToStakingWindow();
+      const moveTimeForward1Hour = async () => {
+        console.log("moveTimeForward1Hour");
+        await moveTimeForward(3600);
+      }
+      
+      const moveForwardAndStake = async () => {
+        let canStake = false;
+        let res;
+        while (!canStake) {
+          await moveTimeForward1Hour();
+          res = await strategy.connect(self).canWithdraw();
+          console.log("------------!res: ",!res);
+          canStake = !res;
+        }
+      }
+
+      await moveForwardAndStake();
+      // await moveToStakingWindow();
 
       const whaleDeposit = async () => {
         const whaleDepositAmount = ethers.utils.parseEther("1");
@@ -433,6 +466,7 @@ describe("Vaults", function () {
       await moveTimeForward(2);
       console.log("Second Harvest");
       await strategy.connect(self).harvest();
+      console.log(`Trying to withdraw: ${depositAmount} against available: ${await strategy.balanceDuringCurrentEpoch()} while withdraw authorized: ${await strategy.canWithdraw()}`);
       await vault.connect(self).withdraw(depositAmount);
       console.log(
         `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(

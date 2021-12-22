@@ -17,28 +17,50 @@ async function deployVault(timelock, depositFee) {
   return vault;
 }
 
-async function deployStrategy(vaultAddress, treasury) {
+const deployMasonDeployer = async () => {
+  const MasonDeployer = await ethers.getContractFactory("MasonDeployer");
+  const masonDeployer = await MasonDeployer.deploy();
+  await masonDeployer.deployed();
+  console.log(`Mason Deployer deployed to ${masonDeployer.address}`);
+  return masonDeployer;
+}
+
+async function deployStrategy(vaultAddress, treasuryAddress, masonDeployerAddress) {
   const Strategy = await ethers.getContractFactory("ReaperAutoCompoundMasonry");
-  console.log(vaultAddress);
-  console.log(treasury);
-  const strategy = await Strategy.deploy(vaultAddress, treasury);
+  console.log("vaultAddress: ",vaultAddress);
+  console.log("treasuryAddress address: ",treasuryAddress);
+  console.log("masonDeployerAddress: ",masonDeployerAddress);
+  const strategy = await Strategy.deploy(vaultAddress, treasuryAddress, masonDeployerAddress);
   await strategy.deployed();
   console.log(`Strategy deployed to ${strategy.address}`);
+  const strategySetMasonsTx = await strategy.setMasons();
+  sleep(30000);
+  console.log(`Masons set`);
   return strategy;
 }
 
-async function deployMasons(strategy) {
-  Mason = await ethers.getContractFactory("Mason");
-  const nrOfMasons = 6;
-  const masonsAddress = [];
-  for (let i = 0; i < nrOfMasons; i++) {
-    const mason = await Mason.deploy(strategy);
-    await mason.deployed();
-    masonsAddress.push(mason.address);
-    console.log(`mason deployed at ${mason.address}`);
+const getMasonsAddress = async (strategy) => {
+  const masonsAdress = [];
+  let masonAddress;
+  for (let i = 0; i < 6; i++) {
+    masonAddress = await strategy.masons(i);
+    console.log(`masons[${i}]: ${masonAddress}`);
+    masonsAdress.push(masonAddress);
   }
-  return masonsAddress;
+  return masonsAdress;
 }
+// async function deployMasons(strategy) {
+//   Mason = await ethers.getContractFactory("Mason");
+//   const nrOfMasons = 6;
+//   const masonsAddress = [];
+//   for (let i = 0; i < nrOfMasons; i++) {
+//     const mason = await Mason.deploy(strategy);
+//     await mason.deployed();
+//     masonsAddress.push(mason.address);
+//     console.log(`mason deployed at ${mason.address}`);
+//   }
+//   return masonsAddress;
+// }
 
 async function initializeVault(vaultAddress, strategyAddress) {
   const Vault = await ethers.getContractFactory("ReaperVaultv1_2");
@@ -62,7 +84,7 @@ function sleep(milliseconds) {
 module.exports = {
   deployVault,
   deployStrategy,
-  deployMasons,
+  deployMasonDeployer,
   initializeVault,
   sleep,
 };
@@ -71,11 +93,12 @@ async function main() {
   const vault = await deployVault(432000, 0);
   const vaultAddress = vault.address;
   const treasury = "0x0e7c5313E9BB80b654734d9b7aB1FB01468deE3b";
-  const strategy = await deployStrategy(vaultAddress, treasury);
+  const masonDeployer = await deployMasonDeployer();
+  const strategy = await deployStrategy(vaultAddress, treasury, masonDeployer.address);
   const strategyAddress = strategy.address;
-  const masonsAddress = await deployMasons(strategyAddress);
-  await strategy.setMasons(masonsAddress);
-  console.log("set masons");
+  const masonsAddress = await getMasonsAddress(strategy);
+  // await strategy.setMasons(masonsAddress);
+  // console.log("set masons");
   await initializeVault(vaultAddress, strategyAddress);
 }
 
