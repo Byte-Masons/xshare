@@ -29,7 +29,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "lint:sol": "./node_modules/.bin/solhint --config ./.solhint.json --max-warnings 0 -f table contracts/**/*.sol",
+    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol"
   },
   "eslintConfig": {
     "extends": [
@@ -50,6 +52,10 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^3.2.3"
+    "gh-pages": "^3.2.3",
+    "prettier": "^2.5.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "solhint": "^3.3.6",
+    "solhint-plugin-prettier": "^0.0.5"
   }
 }

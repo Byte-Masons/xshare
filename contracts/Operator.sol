@@ -2,16 +2,13 @@
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import '@openzeppelin/contracts/utils/Context.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
 contract Operator is Context, Ownable {
     address private _operator;
 
-    event OperatorTransferred(
-        address indexed previousOperator,
-        address indexed newOperator
-    );
+    event OperatorTransferred(address indexed previousOperator, address indexed newOperator);
 
     constructor() internal {
         _operator = _msgSender();
@@ -23,10 +20,7 @@ contract Operator is Context, Ownable {
     }
 
     modifier onlyOperator() {
-        require(
-            _operator == msg.sender,
-            "operator: caller is not the operator"
-        );
+        require(_operator == msg.sender, 'operator: caller is not the operator');
         _;
     }
 
@@ -39,10 +33,7 @@ contract Operator is Context, Ownable {
     }
 
     function _transferOperator(address newOperator_) internal {
-        require(
-            newOperator_ != address(0),
-            "operator: zero address given for new operator"
-        );
+        require(newOperator_ != address(0), 'operator: zero address given for new operator');
         emit OperatorTransferred(address(0), newOperator_);
         _operator = newOperator_;
     }

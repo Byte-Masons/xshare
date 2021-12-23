@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
-import "hardhat/console.sol";
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -42,10 +41,7 @@ pragma solidity ^0.6.0;
 contract Ownable is Context {
     address private _owner;
 
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
@@ -67,7 +63,7 @@ contract Ownable is Context {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(_owner == _msgSender(), "Ownable: caller is not the owner");
+        require(_owner == _msgSender(), 'Ownable: caller is not the owner');
         _;
     }
 
@@ -88,10 +84,7 @@ contract Ownable is Context {
      * Can only be called by the current owner.
      */
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(
-            newOwner != address(0),
-            "Ownable: new owner is the zero address"
-        );
+        require(newOwner != address(0), 'Ownable: new owner is the zero address');
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
@@ -122,9 +115,7 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
+    function transfer(address recipient, uint256 amount) external returns (bool);
 
     /**
      * @dev Returns the remaining number of tokens that `spender` will be
@@ -133,10 +124,7 @@ interface IERC20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -181,11 +169,7 @@ interface IERC20 {
      * @dev Emitted when the allowance of a `spender` for an `owner` is set by
      * a call to {approve}. `value` is the new allowance.
      */
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 // File: @openzeppelin/contracts/math/SafeMath.sol
@@ -218,7 +202,7 @@ library SafeMath {
      */
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
-        require(c >= a, "SafeMath: addition overflow");
+        require(c >= a, 'SafeMath: addition overflow');
 
         return c;
     }
@@ -234,7 +218,7 @@ library SafeMath {
      * - Subtraction cannot overflow.
      */
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, "SafeMath: subtraction overflow");
+        return sub(a, b, 'SafeMath: subtraction overflow');
     }
 
     /**
@@ -277,7 +261,7 @@ library SafeMath {
         }
 
         uint256 c = a * b;
-        require(c / a == b, "SafeMath: multiplication overflow");
+        require(c / a == b, 'SafeMath: multiplication overflow');
 
         return c;
     }
@@ -295,7 +279,7 @@ library SafeMath {
      * - The divisor cannot be zero.
      */
     function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return div(a, b, "SafeMath: division by zero");
+        return div(a, b, 'SafeMath: division by zero');
     }
 
     /**
@@ -335,7 +319,7 @@ library SafeMath {
      * - The divisor cannot be zero.
      */
     function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return mod(a, b, "SafeMath: modulo by zero");
+        return mod(a, b, 'SafeMath: modulo by zero');
     }
 
     /**
@@ -415,17 +399,11 @@ library Address {
      * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
      */
     function sendValue(address payable recipient, uint256 amount) internal {
-        require(
-            address(this).balance >= amount,
-            "Address: insufficient balance"
-        );
+        require(address(this).balance >= amount, 'Address: insufficient balance');
 
         // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success, ) = recipient.call{value: amount}("");
-        require(
-            success,
-            "Address: unable to send value, recipient may have reverted"
-        );
+        (bool success, ) = recipient.call{ value: amount }('');
+        require(success, 'Address: unable to send value, recipient may have reverted');
     }
 
     /**
@@ -446,11 +424,8 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(address target, bytes memory data)
-        internal
-        returns (bytes memory)
-    {
-        return functionCall(target, data, "Address: low-level call failed");
+    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
+        return functionCall(target, data, 'Address: low-level call failed');
     }
 
     /**
@@ -483,13 +458,7 @@ library Address {
         bytes memory data,
         uint256 value
     ) internal returns (bytes memory) {
-        return
-            functionCallWithValue(
-                target,
-                data,
-                value,
-                "Address: low-level call with value failed"
-            );
+        return functionCallWithValue(target, data, value, 'Address: low-level call with value failed');
     }
 
     /**
@@ -504,10 +473,7 @@ library Address {
         uint256 value,
         string memory errorMessage
     ) internal returns (bytes memory) {
-        require(
-            address(this).balance >= value,
-            "Address: insufficient balance for call"
-        );
+        require(address(this).balance >= value, 'Address: insufficient balance for call');
         return _functionCallWithValue(target, data, value, errorMessage);
     }
 
@@ -517,12 +483,10 @@ library Address {
         uint256 weiValue,
         string memory errorMessage
     ) private returns (bytes memory) {
-        require(isContract(target), "Address: call to non-contract");
+        require(isContract(target), 'Address: call to non-contract');
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.call{value: weiValue}(
-            data
-        );
+        (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
         if (success) {
             return returndata;
         } else {
@@ -653,12 +617,7 @@ contract ERC20 is Context, IERC20 {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount)
-        public
-        virtual
-        override
-        returns (bool)
-    {
+    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -666,13 +625,7 @@ contract ERC20 is Context, IERC20 {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender)
-        public
-        view
-        virtual
-        override
-        returns (uint256)
-    {
+    function allowance(address owner, address spender) public view virtual override returns (uint256) {
         return _allowances[owner][spender];
     }
 
@@ -683,12 +636,7 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount)
-        public
-        virtual
-        override
-        returns (bool)
-    {
+    function approve(address spender, uint256 amount) public virtual override returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -714,10 +662,7 @@ contract ERC20 is Context, IERC20 {
         _approve(
             sender,
             _msgSender(),
-            _allowances[sender][_msgSender()].sub(
-                amount,
-                "ERC20: transfer amount exceeds allowance"
-            )
+            _allowances[sender][_msgSender()].sub(amount, 'ERC20: transfer amount exceeds allowance')
         );
         return true;
     }
@@ -734,16 +679,8 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue)
-        public
-        virtual
-        returns (bool)
-    {
-        _approve(
-            _msgSender(),
-            spender,
-            _allowances[_msgSender()][spender].add(addedValue)
-        );
+    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
         return true;
     }
 
@@ -761,18 +698,11 @@ contract ERC20 is Context, IERC20 {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue)
-        public
-        virtual
-        returns (bool)
-    {
+    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
         _approve(
             _msgSender(),
             spender,
-            _allowances[_msgSender()][spender].sub(
-                subtractedValue,
-                "ERC20: decreased allowance below zero"
-            )
+            _allowances[_msgSender()][spender].sub(subtractedValue, 'ERC20: decreased allowance below zero')
         );
         return true;
     }
@@ -796,15 +726,12 @@ contract ERC20 is Context, IERC20 {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
+        require(sender != address(0), 'ERC20: transfer from the zero address');
+        require(recipient != address(0), 'ERC20: transfer to the zero address');
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        _balances[sender] = _balances[sender].sub(
-            amount,
-            "ERC20: transfer amount exceeds balance"
-        );
+        _balances[sender] = _balances[sender].sub(amount, 'ERC20: transfer amount exceeds balance');
         _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
     }
@@ -819,7 +746,7 @@ contract ERC20 is Context, IERC20 {
      * - `to` cannot be the zero address.
      */
     function _mint(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: mint to the zero address");
+        require(account != address(0), 'ERC20: mint to the zero address');
 
         _beforeTokenTransfer(address(0), account, amount);
 
@@ -840,14 +767,11 @@ contract ERC20 is Context, IERC20 {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: burn from the zero address");
+        require(account != address(0), 'ERC20: burn from the zero address');
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        _balances[account] = _balances[account].sub(
-            amount,
-            "ERC20: burn amount exceeds balance"
-        );
+        _balances[account] = _balances[account].sub(amount, 'ERC20: burn amount exceeds balance');
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
     }
@@ -870,8 +794,8 @@ contract ERC20 is Context, IERC20 {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
+        require(owner != address(0), 'ERC20: approve from the zero address');
+        require(spender != address(0), 'ERC20: approve to the zero address');
 
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
@@ -931,10 +855,7 @@ library SafeERC20 {
         address to,
         uint256 value
     ) internal {
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.transfer.selector, to, value)
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
     }
 
     function safeTransferFrom(
@@ -943,10 +864,7 @@ library SafeERC20 {
         address to,
         uint256 value
     ) internal {
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.transferFrom.selector, from, to, value)
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
     }
 
     /**
@@ -967,12 +885,9 @@ library SafeERC20 {
         // solhint-disable-next-line max-line-length
         require(
             (value == 0) || (token.allowance(address(this), spender) == 0),
-            "SafeERC20: approve from non-zero to non-zero allowance"
+            'SafeERC20: approve from non-zero to non-zero allowance'
         );
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.approve.selector, spender, value)
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
     }
 
     function safeIncreaseAllowance(
@@ -980,17 +895,8 @@ library SafeERC20 {
         address spender,
         uint256 value
     ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).add(
-            value
-        );
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(
-                token.approve.selector,
-                spender,
-                newAllowance
-            )
-        );
+        uint256 newAllowance = token.allowance(address(this), spender).add(value);
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
     function safeDecreaseAllowance(
@@ -1000,16 +906,9 @@ library SafeERC20 {
     ) internal {
         uint256 newAllowance = token.allowance(address(this), spender).sub(
             value,
-            "SafeERC20: decreased allowance below zero"
+            'SafeERC20: decreased allowance below zero'
         );
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(
-                token.approve.selector,
-                spender,
-                newAllowance
-            )
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
     /**
@@ -1023,17 +922,11 @@ library SafeERC20 {
         // we're implementing it ourselves. We use {Address.functionCall} to perform this call, which verifies that
         // the target address contains contract code and also asserts for success in the low-level call.
 
-        bytes memory returndata = address(token).functionCall(
-            data,
-            "SafeERC20: low-level call failed"
-        );
+        bytes memory returndata = address(token).functionCall(data, 'SafeERC20: low-level call failed');
         if (returndata.length > 0) {
             // Return data is optional
             // solhint-disable-next-line max-line-length
-            require(
-                abi.decode(returndata, (bool)),
-                "SafeERC20: ERC20 operation did not succeed"
-            );
+            require(abi.decode(returndata, (bool)), 'SafeERC20: ERC20 operation did not succeed');
         }
     }
 }
@@ -1086,7 +979,7 @@ contract Pausable is Context {
      * - The contract must not be paused.
      */
     modifier whenNotPaused() {
-        require(!_paused, "Pausable: paused");
+        require(!_paused, 'Pausable: paused');
         _;
     }
 
@@ -1098,7 +991,7 @@ contract Pausable is Context {
      * - The contract must be paused.
      */
     modifier whenPaused() {
-        require(_paused, "Pausable: not paused");
+        require(_paused, 'Pausable: not paused');
         _;
     }
 
@@ -1230,15 +1123,9 @@ interface IMasterChef {
 
     function setBooPerSecond(uint256 _rewardTokenPerSecond) external;
 
-    function getMultiplier(uint256 _from, uint256 _to)
-        external
-        view
-        returns (uint256);
+    function getMultiplier(uint256 _from, uint256 _to) external view returns (uint256);
 
-    function pendingBOO(uint256 _pid, address _user)
-        external
-        view
-        returns (uint256);
+    function pendingBOO(uint256 _pid, address _user) external view returns (uint256);
 
     function massUpdatePools() external;
 
@@ -1248,10 +1135,7 @@ interface IMasterChef {
 
     function withdraw(uint256 _pid, uint256 _amount) external;
 
-    function userInfo(uint256 _pid, address _user)
-        external
-        view
-        returns (uint256, uint256);
+    function userInfo(uint256 _pid, address _user) external view returns (uint256, uint256);
 
     function emergencyWithdraw(uint256 _pid) external;
 }
@@ -1304,7 +1188,7 @@ interface IMason {
 }
 
 interface IMasonDeployer {
-    function deployMasons(uint256 _total) external returns(address[] memory);
+    function deployMasons(uint256 _total) external returns (address[] memory);
 }
 
 pragma solidity ^0.6.0;
@@ -1331,10 +1215,8 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {stakedToken} - LP Token that the strategy maximizes.
      */
     address public wftm = address(0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83);
-    address public rewardToken =
-        address(0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7);
-    address public stakedToken =
-        address(0x4cdF39285D7Ca8eB3f090fDA0C069ba5F4145B37);
+    address public rewardToken = address(0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7);
+    address public stakedToken = address(0x4cdF39285D7Ca8eB3f090fDA0C069ba5F4145B37);
 
     /**
      * @dev Third Party Contracts:
@@ -1342,10 +1224,8 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {masonry} - masonry contract
      * {masons} - vaults the strategy cycles through to allow withdrawals every epoch (up to the current mason's supply + w/e is in the deposit queue)
      */
-    address public uniRouter =
-        address(0xF491e7B69E4244ad4002BC14e878a34207E38c29);
-    address public masonry =
-        address(0x8764DE60236C5843D9faEB1B638fbCE962773B67);
+    address public uniRouter = address(0xF491e7B69E4244ad4002BC14e878a34207E38c29);
+    address public masonry = address(0x8764DE60236C5843D9faEB1B638fbCE962773B67);
     address[] public masons;
 
     /**
@@ -1387,11 +1267,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {rewardTokenToStakedTokenRoute} - Route we take to get from {rewardToken} into {stakedToken}.
      */
     address[] public rewardTokenToWftmRoute = [rewardToken, wftm];
-    address[] public rewardTokenToStakedTokenRoute = [
-        rewardToken,
-        wftm,
-        stakedToken
-    ];
+    address[] public rewardTokenToStakedTokenRoute = [rewardToken, wftm, stakedToken];
 
     /**
      * @dev Variables used to prevent erronous interactions with the masonry
@@ -1420,7 +1296,11 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * @dev Initializes the strategy. Sets parameters, saves routes, and gives allowances.
      * @notice see documentation for each variable above its respective declaration.
      */
-    constructor(address _vault, address _treasury, address _masonDeployer) public {
+    constructor(
+        address _vault,
+        address _treasury,
+        address _masonDeployer
+    ) public {
         vault = _vault;
         treasury = _treasury;
         masonDeployer = _masonDeployer;
@@ -1432,7 +1312,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * @dev Throws if called by any account that is not the vault
      */
     modifier onlyVault() {
-        require(_msgSender() == vault, "!vault");
+        require(_msgSender() == vault, '!vault');
         _;
     }
 
@@ -1442,18 +1322,13 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * It deposits {stakedToken} in the masonry to farm {rewardToken}
      */
     function deposit() public whenNotPaused {
-        require(masons.length == 6, "The masons array must be initialized");
+        require(masons.length == 6, 'The masons array must be initialized');
         _checkNewEpoch();
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         address currentMason = masons[_getCurrentMasonIndex()];
-        if (
-            stakedTokenBal > 0 &&
-            now > IMason(currentMason).nextEpochPoint() - depositTimeFrame
-        ) {
+        if (stakedTokenBal > 0 && now > IMason(currentMason).nextEpochPoint() - depositTimeFrame) {
             IERC20(stakedToken).safeTransfer(currentMason, stakedTokenBal);
-            uint256 masonStakedTokenBal = IERC20(stakedToken).balanceOf(
-                currentMason
-            );
+            uint256 masonStakedTokenBal = IERC20(stakedToken).balanceOf(currentMason);
             IMason(currentMason).stake(masonStakedTokenBal);
         }
     }
@@ -1465,17 +1340,12 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     function withdraw(uint256 _amount) external onlyVault {
         _checkNewEpoch();
-        require(balanceDuringCurrentEpoch() >= _amount,"_amount too great for the current strategy balance");
+        require(balanceDuringCurrentEpoch() >= _amount, '_amount too great for the current strategy balance');
         _retrieveTokensFromMason();
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         stakedTokenBal = stakedTokenBal > _amount ? _amount : stakedTokenBal;
-        uint256 withdrawFee = stakedTokenBal.mul(securityFee).div(
-            PERCENT_DIVISOR
-        );
-        IERC20(stakedToken).safeTransfer(
-            vault,
-            stakedTokenBal.sub(withdrawFee)
-        );
+        uint256 withdrawFee = stakedTokenBal.mul(securityFee).div(PERCENT_DIVISOR);
+        IERC20(stakedToken).safeTransfer(vault, stakedTokenBal.sub(withdrawFee));
         sameBlockLock = false;
     }
 
@@ -1488,7 +1358,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * 5. It deposits the new LP tokens.
      */
     function harvest() external whenNotPaused {
-        require(!Address.isContract(msg.sender), "!contract");
+        require(!Address.isContract(msg.sender), '!contract');
         _checkNewEpoch();
         _retrieveTokensFromMason();
         _chargeFees();
@@ -1509,23 +1379,20 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
         if (rewardTokenBal > 0 && totalFee != 0) {
             uint256 toWftm = rewardTokenBal.mul(totalFee).div(PERCENT_DIVISOR);
-            IUniswapRouterETH(uniRouter)
-                .swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    toWftm,
-                    0,
-                    rewardTokenToWftmRoute,
-                    address(this),
-                    now.add(600)
-                );
+            IUniswapRouterETH(uniRouter).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                toWftm,
+                0,
+                rewardTokenToWftmRoute,
+                address(this),
+                now.add(600)
+            );
 
             uint256 wftmBal = IERC20(wftm).balanceOf(address(this));
 
             uint256 callFeeToUser = wftmBal.mul(callFee).div(PERCENT_DIVISOR);
             IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
 
-            uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(
-                PERCENT_DIVISOR
-            );
+            uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(PERCENT_DIVISOR);
             IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
         }
     }
@@ -1537,14 +1404,13 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
         if (rewardTokenBal > 0) {
-            IUniswapRouterETH(uniRouter)
-                .swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    rewardTokenBal,
-                    0,
-                    rewardTokenToStakedTokenRoute,
-                    address(this),
-                    now.add(60)
-                );
+            IUniswapRouterETH(uniRouter).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                rewardTokenBal,
+                0,
+                rewardTokenToStakedTokenRoute,
+                address(this),
+                now.add(60)
+            );
         }
         stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
     }
@@ -1563,25 +1429,13 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
                 IMason(currentMason).exit();
             }
 
-            uint256 masonStakedToken = IERC20(stakedToken).balanceOf(
-                currentMason
-            );
-            uint256 masonRewardToken = IERC20(rewardToken).balanceOf(
-                currentMason
-            );
+            uint256 masonStakedToken = IERC20(stakedToken).balanceOf(currentMason);
+            uint256 masonRewardToken = IERC20(rewardToken).balanceOf(currentMason);
             if (masonStakedToken > 0) {
-                IERC20(stakedToken).safeTransferFrom(
-                    currentMason,
-                    address(this),
-                    masonStakedToken
-                );
+                IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
             }
             if (masonRewardToken > 0) {
-                IERC20(rewardToken).safeTransferFrom(
-                    currentMason,
-                    address(this),
-                    masonRewardToken
-                );
+                IERC20(rewardToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
             }
 
             tokensHaveBeenWithdrawn = true;
@@ -1630,8 +1484,8 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * Returns stakedToken available for withdraw for the current epoch
      */
     function balanceDuringCurrentEpoch() public view returns (uint256) {
-        uint256 balance = IMason(masons[_getCurrentMasonIndex()]).canWithdraw() ? 
-            balanceOfStakedToken().add(IMason(masons[_getCurrentMasonIndex()]).balanceOf())
+        uint256 balance = IMason(masons[_getCurrentMasonIndex()]).canWithdraw()
+            ? balanceOfStakedToken().add(IMason(masons[_getCurrentMasonIndex()]).balanceOf())
             : balanceOfStakedToken();
         return balance;
     }
@@ -1655,7 +1509,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     }
 
     function setDepositTimeFrame(uint256 _depositTimeFrame) external onlyOwner {
-        require(_depositTimeFrame < 4 hours, "depositTimeFrame too big");
+        require(_depositTimeFrame < 4 hours, 'depositTimeFrame too big');
         depositTimeFrame = _depositTimeFrame;
     }
 
@@ -1664,7 +1518,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * vault, ready to be migrated to the new strat.
      */
     function retireStrat() external {
-        require(msg.sender == vault, "!vault");
+        require(msg.sender == vault, '!vault');
         _checkNewEpoch();
         _retrieveTokensFromMason();
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
@@ -1718,12 +1572,8 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     /**
      * @dev updates the total fee, capped at 5%
      */
-    function updateTotalFee(uint256 _totalFee)
-        external
-        onlyOwner
-        returns (bool)
-    {
-        require(_totalFee <= MAX_FEE, "Fee Too High");
+    function updateTotalFee(uint256 _totalFee) external onlyOwner returns (bool) {
+        require(_totalFee <= MAX_FEE, 'Fee Too High');
         totalFee = _totalFee;
         emit TotalFeeUpdated(totalFee);
         return true;
@@ -1742,11 +1592,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     /**
      * @dev Update the treasury
      */
-    function updateTreasury(address newTreasury)
-        external
-        onlyOwner
-        returns (bool)
-    {
+    function updateTreasury(address newTreasury) external onlyOwner returns (bool) {
         treasury = newTreasury;
         return true;
     }
@@ -1754,11 +1600,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     /**
      * Update the route to convert rewardToken to stakedToken
      */
-    function updateRoute(address[] calldata _route)
-        external
-        onlyOwner
-        returns (bool)
-    {
+    function updateRoute(address[] calldata _route) external onlyOwner returns (bool) {
         rewardTokenToStakedTokenRoute = _route;
     }
 }

@@ -1,0 +1,12 @@
+# folders
+.vscode/
+artifacts/
+build/
+cache/
+node_modules/
+deployment/
+tombfinance/
+contracts/XShare.sol
+
+# files
+coverage.json

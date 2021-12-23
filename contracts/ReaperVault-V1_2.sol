@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // File: @openzeppelin/contracts/GSN/Context.sol
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 pragma solidity ^0.6.0;
 
@@ -48,9 +48,7 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
+    function transfer(address recipient, uint256 amount) external returns (bool);
 
     /**
      * @dev Returns the remaining number of tokens that `spender` will be
@@ -59,10 +57,7 @@ interface IERC20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -107,11 +102,7 @@ interface IERC20 {
      * @dev Emitted when the allowance of a `spender` for an `owner` is set by
      * a call to {approve}. `value` is the new allowance.
      */
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 pragma solidity ^0.6.0;
@@ -142,7 +133,7 @@ library SafeMath {
      */
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
-        require(c >= a, "SafeMath: addition overflow");
+        require(c >= a, 'SafeMath: addition overflow');
 
         return c;
     }
@@ -158,7 +149,7 @@ library SafeMath {
      * - Subtraction cannot overflow.
      */
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, "SafeMath: subtraction overflow");
+        return sub(a, b, 'SafeMath: subtraction overflow');
     }
 
     /**
@@ -201,7 +192,7 @@ library SafeMath {
         }
 
         uint256 c = a * b;
-        require(c / a == b, "SafeMath: multiplication overflow");
+        require(c / a == b, 'SafeMath: multiplication overflow');
 
         return c;
     }
@@ -219,7 +210,7 @@ library SafeMath {
      * - The divisor cannot be zero.
      */
     function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return div(a, b, "SafeMath: division by zero");
+        return div(a, b, 'SafeMath: division by zero');
     }
 
     /**
@@ -259,7 +250,7 @@ library SafeMath {
      * - The divisor cannot be zero.
      */
     function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return mod(a, b, "SafeMath: modulo by zero");
+        return mod(a, b, 'SafeMath: modulo by zero');
     }
 
     /**
@@ -337,17 +328,11 @@ library Address {
      * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
      */
     function sendValue(address payable recipient, uint256 amount) internal {
-        require(
-            address(this).balance >= amount,
-            "Address: insufficient balance"
-        );
+        require(address(this).balance >= amount, 'Address: insufficient balance');
 
         // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success, ) = recipient.call{value: amount}("");
-        require(
-            success,
-            "Address: unable to send value, recipient may have reverted"
-        );
+        (bool success, ) = recipient.call{ value: amount }('');
+        require(success, 'Address: unable to send value, recipient may have reverted');
     }
 
     /**
@@ -368,11 +353,8 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(address target, bytes memory data)
-        internal
-        returns (bytes memory)
-    {
-        return functionCall(target, data, "Address: low-level call failed");
+    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
+        return functionCall(target, data, 'Address: low-level call failed');
     }
 
     /**
@@ -405,13 +387,7 @@ library Address {
         bytes memory data,
         uint256 value
     ) internal returns (bytes memory) {
-        return
-            functionCallWithValue(
-                target,
-                data,
-                value,
-                "Address: low-level call with value failed"
-            );
+        return functionCallWithValue(target, data, value, 'Address: low-level call with value failed');
     }
 
     /**
@@ -426,10 +402,7 @@ library Address {
         uint256 value,
         string memory errorMessage
     ) internal returns (bytes memory) {
-        require(
-            address(this).balance >= value,
-            "Address: insufficient balance for call"
-        );
+        require(address(this).balance >= value, 'Address: insufficient balance for call');
         return _functionCallWithValue(target, data, value, errorMessage);
     }
 
@@ -439,12 +412,10 @@ library Address {
         uint256 weiValue,
         string memory errorMessage
     ) private returns (bytes memory) {
-        require(isContract(target), "Address: call to non-contract");
+        require(isContract(target), 'Address: call to non-contract');
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.call{value: weiValue}(
-            data
-        );
+        (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
         if (success) {
             return returndata;
         } else {
@@ -573,12 +544,7 @@ contract ERC20 is Context, IERC20 {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount)
-        public
-        virtual
-        override
-        returns (bool)
-    {
+    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -586,13 +552,7 @@ contract ERC20 is Context, IERC20 {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender)
-        public
-        view
-        virtual
-        override
-        returns (uint256)
-    {
+    function allowance(address owner, address spender) public view virtual override returns (uint256) {
         return _allowances[owner][spender];
     }
 
@@ -603,12 +563,7 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount)
-        public
-        virtual
-        override
-        returns (bool)
-    {
+    function approve(address spender, uint256 amount) public virtual override returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -634,10 +589,7 @@ contract ERC20 is Context, IERC20 {
         _approve(
             sender,
             _msgSender(),
-            _allowances[sender][_msgSender()].sub(
-                amount,
-                "ERC20: transfer amount exceeds allowance"
-            )
+            _allowances[sender][_msgSender()].sub(amount, 'ERC20: transfer amount exceeds allowance')
         );
         return true;
     }
@@ -654,16 +606,8 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue)
-        public
-        virtual
-        returns (bool)
-    {
-        _approve(
-            _msgSender(),
-            spender,
-            _allowances[_msgSender()][spender].add(addedValue)
-        );
+    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
         return true;
     }
 
@@ -681,18 +625,11 @@ contract ERC20 is Context, IERC20 {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue)
-        public
-        virtual
-        returns (bool)
-    {
+    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
         _approve(
             _msgSender(),
             spender,
-            _allowances[_msgSender()][spender].sub(
-                subtractedValue,
-                "ERC20: decreased allowance below zero"
-            )
+            _allowances[_msgSender()][spender].sub(subtractedValue, 'ERC20: decreased allowance below zero')
         );
         return true;
     }
@@ -716,15 +653,12 @@ contract ERC20 is Context, IERC20 {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
+        require(sender != address(0), 'ERC20: transfer from the zero address');
+        require(recipient != address(0), 'ERC20: transfer to the zero address');
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        _balances[sender] = _balances[sender].sub(
-            amount,
-            "ERC20: transfer amount exceeds balance"
-        );
+        _balances[sender] = _balances[sender].sub(amount, 'ERC20: transfer amount exceeds balance');
         _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
     }
@@ -739,7 +673,7 @@ contract ERC20 is Context, IERC20 {
      * - `to` cannot be the zero address.
      */
     function _mint(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: mint to the zero address");
+        require(account != address(0), 'ERC20: mint to the zero address');
 
         _beforeTokenTransfer(address(0), account, amount);
 
@@ -760,14 +694,11 @@ contract ERC20 is Context, IERC20 {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: burn from the zero address");
+        require(account != address(0), 'ERC20: burn from the zero address');
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        _balances[account] = _balances[account].sub(
-            amount,
-            "ERC20: burn amount exceeds balance"
-        );
+        _balances[account] = _balances[account].sub(amount, 'ERC20: burn amount exceeds balance');
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
     }
@@ -790,8 +721,8 @@ contract ERC20 is Context, IERC20 {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
+        require(owner != address(0), 'ERC20: approve from the zero address');
+        require(spender != address(0), 'ERC20: approve to the zero address');
 
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
@@ -849,10 +780,7 @@ library SafeERC20 {
         address to,
         uint256 value
     ) internal {
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.transfer.selector, to, value)
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
     }
 
     function safeTransferFrom(
@@ -861,10 +789,7 @@ library SafeERC20 {
         address to,
         uint256 value
     ) internal {
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.transferFrom.selector, from, to, value)
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
     }
 
     /**
@@ -885,12 +810,9 @@ library SafeERC20 {
         // solhint-disable-next-line max-line-length
         require(
             (value == 0) || (token.allowance(address(this), spender) == 0),
-            "SafeERC20: approve from non-zero to non-zero allowance"
+            'SafeERC20: approve from non-zero to non-zero allowance'
         );
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.approve.selector, spender, value)
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
     }
 
     function safeIncreaseAllowance(
@@ -898,17 +820,8 @@ library SafeERC20 {
         address spender,
         uint256 value
     ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).add(
-            value
-        );
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(
-                token.approve.selector,
-                spender,
-                newAllowance
-            )
-        );
+        uint256 newAllowance = token.allowance(address(this), spender).add(value);
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
     function safeDecreaseAllowance(
@@ -918,16 +831,9 @@ library SafeERC20 {
     ) internal {
         uint256 newAllowance = token.allowance(address(this), spender).sub(
             value,
-            "SafeERC20: decreased allowance below zero"
+            'SafeERC20: decreased allowance below zero'
         );
-        _callOptionalReturn(
-            token,
-            abi.encodeWithSelector(
-                token.approve.selector,
-                spender,
-                newAllowance
-            )
-        );
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
     /**
@@ -941,17 +847,11 @@ library SafeERC20 {
         // we're implementing it ourselves. We use {Address.functionCall} to perform this call, which verifies that
         // the target address contains contract code and also asserts for success in the low-level call.
 
-        bytes memory returndata = address(token).functionCall(
-            data,
-            "SafeERC20: low-level call failed"
-        );
+        bytes memory returndata = address(token).functionCall(data, 'SafeERC20: low-level call failed');
         if (returndata.length > 0) {
             // Return data is optional
             // solhint-disable-next-line max-line-length
-            require(
-                abi.decode(returndata, (bool)),
-                "SafeERC20: ERC20 operation did not succeed"
-            );
+            require(abi.decode(returndata, (bool)), 'SafeERC20: ERC20 operation did not succeed');
         }
     }
 }
@@ -973,10 +873,7 @@ pragma solidity ^0.6.0;
 contract Ownable is Context {
     address private _owner;
 
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
@@ -998,7 +895,7 @@ contract Ownable is Context {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(_owner == _msgSender(), "Ownable: caller is not the owner");
+        require(_owner == _msgSender(), 'Ownable: caller is not the owner');
         _;
     }
 
@@ -1019,10 +916,7 @@ contract Ownable is Context {
      * Can only be called by the current owner.
      */
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(
-            newOwner != address(0),
-            "Ownable: new owner is the zero address"
-        );
+        require(newOwner != address(0), 'Ownable: new owner is the zero address');
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
@@ -1076,7 +970,7 @@ abstract contract ReentrancyGuard {
      */
     modifier nonReentrant() {
         // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+        require(_status != _ENTERED, 'ReentrancyGuard: reentrant call');
 
         // Any calls to nonReentrant after this point will fail
         _status = _ENTERED;
@@ -1230,10 +1124,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * @dev Throws if called by any account that is not whitelisted, while whitelist is enabled
      */
     modifier onlyWhitelisted() {
-        require(
-            isWhiteListEnabled == false || whitelist[msg.sender] == true,
-            "Caller is not whitelisted"
-        );
+        require(isWhiteListEnabled == false || whitelist[msg.sender] == true, 'Caller is not whitelisted');
         _;
     }
 
@@ -1244,11 +1135,8 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      */
 
     function initialize(address _strategy) public onlyOwner returns (bool) {
-        require(!initialized, "Contract is already initialized.");
-        require(
-            block.timestamp <= (constructionTime + 1200),
-            "initialization period over, use timelock"
-        );
+        require(!initialized, 'Contract is already initialized.');
+        require(block.timestamp <= (constructionTime + 1200), 'initialization period over, use timelock');
         strategy = _strategy;
         initialized = true;
         return true;
@@ -1260,10 +1148,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      */
 
     function agreeToTerms() public returns (bool) {
-        require(
-            !hasReadAndAcceptedTerms[msg.sender],
-            "you have already accepted the terms"
-        );
+        require(!hasReadAndAcceptedTerms[msg.sender], 'you have already accepted the terms');
         hasReadAndAcceptedTerms[msg.sender] = true;
         emit TermsAccepted(msg.sender);
         return true;
@@ -1275,8 +1160,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      *  and the balance deployed in other contracts as part of the strategy.
      */
     function balance() public view returns (uint256) {
-        return
-            token.balanceOf(address(this)).add(IStrategy(strategy).balanceOf());
+        return token.balanceOf(address(this)).add(IStrategy(strategy).balanceOf());
     }
 
     /**
@@ -1294,8 +1178,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * Returns an uint256 with 18 decimals of how much underlying asset one vault share represents.
      */
     function getPricePerFullShare() public view returns (uint256) {
-        return
-            totalSupply() == 0 ? 1e18 : balance().mul(1e18).div(totalSupply());
+        return totalSupply() == 0 ? 1e18 : balance().mul(1e18).div(totalSupply());
     }
 
     /**
@@ -1314,15 +1197,13 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * it's set to true
      */
     function deposit(uint256 _amount) public nonReentrant onlyWhitelisted {
-        require(_amount > 0, "please provide amount");
+        require(_amount > 0, 'please provide amount');
         uint256 _pool = balance();
         uint256 _before = token.balanceOf(address(this));
         token.safeTransferFrom(msg.sender, address(this), _amount);
         uint256 _after = token.balanceOf(address(this));
         _amount = _after.sub(_before);
-        uint256 _amountAfterDeposit = (
-            _amount.mul(PERCENT_DIVISOR.sub(depositFee))
-        ).div(PERCENT_DIVISOR);
+        uint256 _amountAfterDeposit = (_amount.mul(PERCENT_DIVISOR.sub(depositFee))).div(PERCENT_DIVISOR);
         uint256 shares = 0;
         if (totalSupply() == 0) {
             shares = _amountAfterDeposit;
@@ -1357,7 +1238,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * tokens are burned in the process.
      */
     function withdraw(uint256 _shares) public nonReentrant {
-        require(_shares > 0, "please provide amount");
+        require(_shares > 0, 'please provide amount');
         uint256 r = (balance().mul(_shares)).div(totalSupply());
         _burn(msg.sender, _shares);
 
@@ -1380,10 +1261,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * @param _implementation The address of the candidate strategy.
      */
     function proposeStrat(address _implementation) public onlyOwner {
-        stratCandidate = StratCandidate({
-            implementation: _implementation,
-            proposedTime: block.timestamp
-        });
+        stratCandidate = StratCandidate({ implementation: _implementation, proposedTime: block.timestamp });
         emit NewStratCandidate(_implementation);
     }
 
@@ -1398,14 +1276,8 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      */
 
     function upgradeStrat() public onlyOwner {
-        require(
-            stratCandidate.implementation != address(0),
-            "There is no candidate"
-        );
-        require(
-            stratCandidate.proposedTime.add(approvalDelay) < block.timestamp,
-            "Delay has not passed"
-        );
+        require(stratCandidate.implementation != address(0), 'There is no candidate');
+        require(stratCandidate.proposedTime.add(approvalDelay) < block.timestamp, 'Delay has not passed');
 
         emit UpgradeStrat(stratCandidate.implementation);
 
@@ -1443,7 +1315,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * @param _token address of the token to rescue.
      */
     function inCaseTokensGetStuck(address _token) external onlyOwner {
-        require(_token != address(token), "!token");
+        require(_token != address(token), '!token');
 
         uint256 amount = IERC20(_token).balanceOf(address(this));
         IERC20(_token).safeTransfer(msg.sender, amount);
@@ -1454,10 +1326,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * @param _account address to be modified in the whitelist.
      * @param _isWhitelisted if the address should be whitelisted or not.
      */
-    function setAddressInWhitelist(address _account, bool _isWhitelisted)
-        external
-        onlyOwner
-    {
+    function setAddressInWhitelist(address _account, bool _isWhitelisted) external onlyOwner {
         whitelist[_account] = _isWhitelisted;
     }
 
@@ -1465,10 +1334,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
      * @dev Sets if the whitelist is enabled
      * @param _isWhiteListEnabled if the whitelist should be enabled
      */
-    function setIsWhiteListEnabled(bool _isWhiteListEnabled)
-        external
-        onlyOwner
-    {
+    function setIsWhiteListEnabled(bool _isWhiteListEnabled) external onlyOwner {
         isWhiteListEnabled = _isWhiteListEnabled;
     }
 }

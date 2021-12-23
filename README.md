@@ -18,6 +18,11 @@ npx hardhat run --network opera scripts/setMasons.js <--- If the setMason call f
 
 npx hardhat run --network opera scripts/initializeVault.js <--- If the initializeVault call fails in deploy script
 
+# linting and formatting
+yarn run prettier:solidity <--- formatting
+
+yarn run lint:sol <--- linting
+
 # Deployed address
 
 Vault deployed to 0x6020F4Dc7A7A3DabdF4b3b784543EF01f9Eb61Ab

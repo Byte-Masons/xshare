@@ -1,0 +1,6 @@
+# folders
+build/
+node_modules/
+
+#files
+contracts/XShare.sol
