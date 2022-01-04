@@ -187,7 +187,7 @@ describe("Vaults", function () {
 
     //get artifacts
     Strategy = await ethers.getContractFactory("ReaperAutoCompoundMasonry");
-    Vault = await ethers.getContractFactory("ReaperVaultv1_2");
+    Vault = await ethers.getContractFactory("ReaperVaultv1_3");
     Treasury = await ethers.getContractFactory("ReaperTreasury");
     TombTreasury = await ethers.getContractFactory("Treasury");
     TShare = await ethers.getContractFactory("TShare");
@@ -206,7 +206,8 @@ describe("Vaults", function () {
       pools.tomb.stake[i].name,
       pools.tomb.stake[i].symbol,
       432000,
-      0
+      0,
+      ethers.utils.parseEther("100000000000")
     );
     console.log("vault");
 
