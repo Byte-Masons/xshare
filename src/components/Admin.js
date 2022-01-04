@@ -118,7 +118,7 @@ export default function Admin({}) {
       </Stack>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>
-          Withdrawable amount: {state.balanceOfStakedToken}
+          Withdrawable amount (in TShare): {state.balanceOfStakedToken}
         </div>
       </Stack>
       <Stack spacing={2} direction="row">

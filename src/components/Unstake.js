@@ -42,7 +42,7 @@ export default function Unstake({ tshareBalance, vaultBalance }) {
         <div style={{ lineHeight: 3.2 }}>TShare in wallet: {tshareBalance}</div>
       </Stack>
       <Stack spacing={2} direction="row">
-        <div style={{ lineHeight: 3.2 }}>TShare staked: {vaultBalance}</div>
+        <div style={{ lineHeight: 3.2 }}>Vault shares: {vaultBalance}</div>
       </Stack>
       <Stack spacing={2} direction="row">
         <div style={{ lineHeight: 3.2 }}>TShare amount to unstake:</div>
