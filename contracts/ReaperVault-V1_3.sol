@@ -1027,7 +1027,7 @@ pragma solidity ^0.6.0;
  * This is the contract that receives funds and that users interface with.
  * The yield optimizing strategy itself is implemented in a separate 'Strategy.sol' contract.
  */
-contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
+contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -1203,7 +1203,7 @@ contract ReaperVaultv1_2 is ERC20, Ownable, ReentrancyGuard {
     function deposit(uint256 _amount) public nonReentrant onlyWhitelisted {
         require(_amount > 0, 'please provide amount');
         uint256 _pool = balance();
-        require(_pool.add(_amount) <= tvlCap, "vault is full!");
+        require(_pool.add(_amount) <= tvlCap, 'vault is full!');
         uint256 _before = token.balanceOf(address(this));
         token.safeTransferFrom(msg.sender, address(this), _amount);
         uint256 _after = token.balanceOf(address(this));

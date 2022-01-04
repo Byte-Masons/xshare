@@ -30,8 +30,8 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "lint:sol": "./node_modules/.bin/solhint --config ./.solhint.json --max-warnings 0 -f table contracts/**/*.sol",
-    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol"
+    "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 -f table contracts/**/*.sol",
+    "prettier:solidity": "prettier --write contracts/**/*.sol"
   },
   "eslintConfig": {
     "extends": [

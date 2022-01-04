@@ -1276,11 +1276,13 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * {lastWithdrawIndex} - Last mason index used for withdraw and deposit
      * {depositTimeFrame} - Duration during which deposits will stake into the masonry before the end of an epoch
      * {sameBlockLock} - Lock necessary to prevent withdrawing and staking in the masonry in the same block, triggering its reentrancy guard
+     * {stratHasBeenRetired} - Flag to help emptying strategy funds
      */
-    bool tokensHaveBeenWithdrawn = false;
+    bool tokensHaveBeenWithdrawn;
     uint8 lastWithdrawIndex;
     uint256 depositTimeFrame = 1 hours;
     bool sameBlockLock;
+    bool stratHasBeenRetired;
 
     /**
      * @dev Events emitted by the contracts
@@ -1401,7 +1403,6 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      * @dev Swaps {rewardToken} for {stakedToken} using SpookySwap.
      */
     function _addLiquidity() internal {
-        uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
         if (rewardTokenBal > 0) {
             IUniswapRouterETH(uniRouter).swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -1409,10 +1410,9 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
                 0,
                 rewardTokenToStakedTokenRoute,
                 address(this),
-                now.add(60)
+                now.add(600)
             );
         }
-        stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
     }
 
     /**
@@ -1422,21 +1422,12 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
     function _retrieveTokensFromMason() internal {
         if (!tokensHaveBeenWithdrawn) {
             address currentMason = masons[_getCurrentMasonIndex()];
-            uint256 masonBalance = IMason(currentMason).balanceOf();
 
-            if (masonBalance > 0) {
+            if (IMason(currentMason).balanceOf() > 0) {
                 sameBlockLock = true;
                 IMason(currentMason).exit();
             }
-
-            uint256 masonStakedToken = IERC20(stakedToken).balanceOf(currentMason);
-            uint256 masonRewardToken = IERC20(rewardToken).balanceOf(currentMason);
-            if (masonStakedToken > 0) {
-                IERC20(stakedToken).safeTransferFrom(currentMason, address(this), masonStakedToken);
-            }
-            if (masonRewardToken > 0) {
-                IERC20(rewardToken).safeTransferFrom(currentMason, address(this), masonRewardToken);
-            }
+            _pullFromMason(currentMason);
 
             tokensHaveBeenWithdrawn = true;
         }
@@ -1519,6 +1510,7 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
      */
     function retireStrat() external {
         require(msg.sender == vault, '!vault');
+        stratHasBeenRetired = true;
         _checkNewEpoch();
         _retrieveTokensFromMason();
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
@@ -1532,6 +1524,40 @@ contract ReaperAutoCompoundMasonry is Ownable, Pausable {
         pause();
         _checkNewEpoch();
         _retrieveTokensFromMason();
+    }
+
+    /**
+     * @dev Allows to withdraw leftover funds from masons once the strat has been retired
+     */
+    function withdrawPostRetire() external onlyOwner {
+        // Check that this is called post retire
+        // Get tokens from masons that can withdraw
+        for (uint8 i; i < masons.length; i++) {
+            if (IMason(masons[i]).canWithdraw() && IMason(masons[i]).balanceOf() > 0) {
+                IMason(masons[i]).exit();
+
+                _pullFromMason(masons[i]);
+            }
+        }
+
+        // Convert rewardToken to stakedToken
+        _addLiquidity();
+
+        // Send to Vault, do not use withdrawFee
+        uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
+        IERC20(stakedToken).safeTransfer(vault, stakedTokenBal);
+    }
+
+    function _pullFromMason(address mason) internal {
+        uint256 masonStakedToken = IERC20(stakedToken).balanceOf(mason);
+        uint256 masonRewardToken = IERC20(rewardToken).balanceOf(mason);
+
+        if (masonStakedToken > 0) {
+            IERC20(stakedToken).safeTransferFrom(mason, address(this), masonStakedToken);
+        }
+        if (masonRewardToken > 0) {
+            IERC20(rewardToken).safeTransferFrom(mason, address(this), masonRewardToken);
+        }
     }
 
     /**
