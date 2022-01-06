@@ -31,3 +31,9 @@ export const getBalanceOfStakedToken = async () => {
   const balanceOfStakedToken = parseInt(ethers.BigNumber.from(await contract.balanceOfStakedToken())._hex,16);
   return balanceOfStakedToken;
 }
+
+export const getBalanceOf = async () => {
+  const contract = getStrategyContract();
+  const balanceOf = parseInt(ethers.BigNumber.from(await contract.balanceOf())._hex,16);
+  return balanceOf;
+}
