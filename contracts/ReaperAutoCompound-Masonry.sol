@@ -2,8 +2,8 @@
 
 pragma solidity >=0.8.0;
 
-import "ozlatest/token/ERC20/ERC20.sol";
-import "ozlatest/token/ERC20/utils/SafeERC20.sol";
+import 'ozlatest/token/ERC20/ERC20.sol';
+import 'ozlatest/token/ERC20/utils/SafeERC20.sol';
 
 interface IUniswapRouterETH {
     function addLiquidity(
@@ -96,6 +96,206 @@ interface IUniswapV2Pair {
     function token1() external view returns (address);
 }
 
+interface IUniswapV2Router01 {
+    function factory() external pure returns (address);
+
+    function WETH() external pure returns (address);
+
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    )
+        external
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        );
+
+    function addLiquidityETH(
+        address token,
+        uint256 amountTokenDesired,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline
+    )
+        external
+        payable
+        returns (
+            uint256 amountToken,
+            uint256 amountETH,
+            uint256 liquidity
+        );
+
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountA, uint256 amountB);
+
+    function removeLiquidityETH(
+        address token,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountToken, uint256 amountETH);
+
+    function removeLiquidityWithPermit(
+        address tokenA,
+        address tokenB,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline,
+        bool approveMax,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external returns (uint256 amountA, uint256 amountB);
+
+    function removeLiquidityETHWithPermit(
+        address token,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline,
+        bool approveMax,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external returns (uint256 amountToken, uint256 amountETH);
+
+    function swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
+
+    function swapTokensForExactTokens(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
+
+    function swapExactETHForTokens(
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external payable returns (uint256[] memory amounts);
+
+    function swapTokensForExactETH(
+        uint256 amountOut,
+        uint256 amountInMax,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
+
+    function swapExactTokensForETH(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
+
+    function swapETHForExactTokens(
+        uint256 amountOut,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external payable returns (uint256[] memory amounts);
+
+    function quote(
+        uint256 amountA,
+        uint256 reserveA,
+        uint256 reserveB
+    ) external pure returns (uint256 amountB);
+
+    function getAmountOut(
+        uint256 amountIn,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) external pure returns (uint256 amountOut);
+
+    function getAmountIn(
+        uint256 amountOut,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) external pure returns (uint256 amountIn);
+
+    function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint256[] memory amounts);
+
+    function getAmountsIn(uint256 amountOut, address[] calldata path) external view returns (uint256[] memory amounts);
+}
+
+interface IUniswapV2Router02 is IUniswapV2Router01 {
+    function removeLiquidityETHSupportingFeeOnTransferTokens(
+        address token,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountETH);
+
+    function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
+        address token,
+        uint256 liquidity,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline,
+        bool approveMax,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external returns (uint256 amountETH);
+
+    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external;
+
+    function swapExactETHForTokensSupportingFeeOnTransferTokens(
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external payable;
+
+    function swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external;
+}
+
 interface IMasonry {
     function stake(uint256 _amount) external;
 
@@ -149,7 +349,8 @@ interface IMasonDeployer {
 
 pragma solidity ^0.8.0;
 
-import "./ReaperBaseStrategy.sol";
+import './ReaperBaseStrategy.sol';
+
 /**
  * @dev Implementation of a strategy to get yields from farming LP Pools in SpookySwap.
  * SpookySwap is an automated market maker (“AMM”) that allows two tokens to be exchanged on Fantom's Opera Network.
@@ -195,28 +396,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     address immutable masonDeployer;
 
     /**
-     * @dev Distribution of fees earned. This allocations relative to the % implemented on
-     * Current implementation separates 5% for fees. Can be changed through the constructor
-     * Inputs in constructor should be ratios between the Fee and Max Fee, divisble into percents by 10000
-     *
-     * {callFee} - Percent of the totalFee reserved for the harvester (1000 = 10% of total fee: 0.5% by default)
-     * {treasuryFee} - Percent of the totalFee taken by maintainers of the software (9000 = 90% of total fee: 4.5% by default)
-     * {securityFee} - Fee taxed when a user withdraws funds. Taken to prevent flash deposit/harvest attacks.
-     * These funds are redistributed to stakers in the pool.
-     *
-     * {totalFee} - divided by 10,000 to determine the % fee. Set to 5% by default and
-     * lowered as necessary to provide users with the most competitive APY.
-     *
-     * {MAX_FEE} - Maximum fee allowed by the strategy. Hard-capped at 5%.
-     */
-
-    uint256 public callFee = 1000;
-    uint256 public treasuryFee = 9000;
-    uint256 public securityFee = 10;
-    uint256 public totalFee = 450;
-    uint256 public constant MAX_FEE = 500;
-
-    /**
      * @dev Routes we take to swap tokens using PanrewardTokenSwap.
      * {rewardTokenToWftmRoute} - Route we take to get from {rewardToken} into {wftm}.
      * {rewardTokenToStakedTokenRoute} - Route we take to get from {rewardToken} into {stakedToken}.
@@ -238,14 +417,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     uint256 depositTimeFrame = 1 hours;
     bool sameBlockLock;
     bool stratHasBeenRetired;
-
-    /**
-     * @dev Events emitted by the contracts
-     * {TotalFeeUpdated} Event that is fired each time the total fee is updated.
-     * {CallFeeUpdated} Event that is fired each time the call fee is updated.
-     */
-    event TotalFeeUpdated(uint256 newFee);
-    event CallFeeUpdated(uint256 newCallFee, uint256 newTreasuryFee);
 
     /**
      * @dev Initializes the strategy. Sets parameters, saves routes, and gives allowances.
@@ -312,7 +483,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * 4. Adds more liquidity to the pool if on another block than the rewards' claiming.
      * 5. It deposits the new LP tokens.
      */
-    function _harvestCore() override internal whenNotPaused {
+    function _harvestCore() internal override whenNotPaused {
         require(!Address.isContract(msg.sender), '!contract');
         _checkNewEpoch();
         _retrieveTokensFromMason();
@@ -324,13 +495,17 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         sameBlockLock = false;
     }
 
-        /**
+    /**
      * @dev Returns the approx amount of profit from harvesting plus fee that
      *      would be returned to harvest caller.
      */
-    function estimateHarvest() override external view virtual returns (uint256 profit, uint256 callFeeToUser) {
-        profit = 1;
-        callFeeToUser =1;
+    function estimateHarvest() external view virtual override returns (uint256 profit, uint256 callFeeToUser) {
+        uint256 reward = IMason(masons[_getCurrentMasonIndex()]).earned();
+        uint256[] memory amountOutMin = IUniswapV2Router02(uniRouter).getAmountsOut(reward, rewardTokenToWftmRoute);
+        profit = amountOutMin[1];
+        uint256 wftmFee = profit.mul(totalFee).div(PERCENT_DIVISOR);
+        callFeeToUser = wftmFee.mul(callFee).div(PERCENT_DIVISOR);
+        profit = profit.sub(wftmFee);
     }
 
     /**
@@ -408,7 +583,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * @dev Function to calculate the total underlaying {lpPair} held by the strat.
      * It takes into account both the funds in hand, as the funds allocated in the masonry.
      */
-    function balanceOf() override public view returns (uint256) {
+    function balanceOf() public view override returns (uint256) {
         return balanceOfStakedToken().add(balanceOfPool());
     }
 
@@ -556,26 +731,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     function _removeAllowances() internal {
         IERC20(stakedToken).safeApprove(masonry, 0);
         IERC20(rewardToken).safeApprove(uniRouter, 0);
-    }
-
-    /**
-     * @dev updates the total fee, capped at 5%
-     */
-    function updateTotalFee(uint256 _totalFee) external onlyOwner returns (bool) {
-        require(_totalFee <= MAX_FEE, 'Fee Too High');
-        totalFee = _totalFee;
-        emit TotalFeeUpdated(totalFee);
-        return true;
-    }
-
-    /**
-     * @dev updates the call fee and adjusts the treasury fee to cover the difference
-     */
-    function updateCallFee(uint256 _callFee) external onlyOwner returns (bool) {
-        callFee = _callFee;
-        treasuryFee = PERCENT_DIVISOR.sub(callFee);
-        emit CallFeeUpdated(callFee, treasuryFee);
-        return true;
     }
 
     /**
