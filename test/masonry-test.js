@@ -211,8 +211,6 @@ describe("Vaults", function () {
     );
     console.log("vault");
 
-    await vault.setIsWhiteListEnabled(false);
-
     masonDeployer = await MasonDeployer.deploy();
     console.log("masonDeployer");
     strategy = await Strategy.deploy(vault.address, treasury.address,masonDeployer.address);
@@ -417,7 +415,7 @@ describe("Vaults", function () {
         let res;
         while (!canStake) {
           await moveTimeForward1Hour();
-          res = await strategy.connect(self).canWithdraw();
+          res = await strategy.connect(self).canWithdrawFromMason();
           console.log("------------!res: ",!res);
           canStake = !res;
         }
@@ -467,7 +465,7 @@ describe("Vaults", function () {
       await moveTimeForward(2);
       console.log("Second Harvest");
       await strategy.connect(self).harvest();
-      console.log(`Trying to withdraw: ${depositAmount} against available: ${await strategy.balanceDuringCurrentEpoch()} while withdraw authorized: ${await strategy.canWithdraw()}`);
+      console.log(`Trying to withdraw: ${depositAmount} against available: ${await strategy.balanceDuringCurrentEpoch()} while withdraw authorized: ${await strategy.canWithdrawFromMason()}`);
       await vault.connect(self).withdraw(depositAmount);
       console.log(
         `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
@@ -487,33 +485,33 @@ describe("Vaults", function () {
         parseInt(userBalance - withdrawFee)
       );
     });
-    it("should block deposits and withdrawals when whitelist is enabled", async function () {
-      await vault.setIsWhiteListEnabled(true);
-      const depositAmount = ethers.utils.parseEther(".0001");
-      await expect(vault.connect(self).deposit(depositAmount)).to.be.reverted;
-    });
-    it("should allow whitelisted address when whitelisting is enabled", async function () {
-      await vault.setIsWhiteListEnabled(true);
-      await vault.connect(owner).setAddressInWhitelist(selfAddress, true);
-      const depositAmount = ethers.utils.parseEther(".0001");
-      await expect(vault.connect(self).deposit(depositAmount)).to.not.be
-        .reverted;
-    });
-    it("onlyOwner should be able to set if whitelist is enabled", async function () {
-      await expect(vault.connect(self).setIsWhiteListEnabled(true)).to.be
-        .reverted;
+    // it("should block deposits and withdrawals when whitelist is enabled", async function () {
+    //   await vault.setIsWhiteListEnabled(true);
+    //   const depositAmount = ethers.utils.parseEther(".0001");
+    //   await expect(vault.connect(self).deposit(depositAmount)).to.be.reverted;
+    // });
+    // it("should allow whitelisted address when whitelisting is enabled", async function () {
+    //   await vault.setIsWhiteListEnabled(true);
+    //   await vault.connect(owner).setAddressInWhitelist(selfAddress, true);
+    //   const depositAmount = ethers.utils.parseEther(".0001");
+    //   await expect(vault.connect(self).deposit(depositAmount)).to.not.be
+    //     .reverted;
+    // });
+    // it("onlyOwner should be able to set if whitelist is enabled", async function () {
+    //   await expect(vault.connect(self).setIsWhiteListEnabled(true)).to.be
+    //     .reverted;
 
-      await expect(vault.connect(owner).setIsWhiteListEnabled(true)).to.not.be
-        .reverted;
-    });
-    it("onlyOwner should be able to set whitelist", async function () {
-      await expect(vault.connect(self).setAddressInWhitelist(selfAddress, true))
-        .to.be.reverted;
+    //   await expect(vault.connect(owner).setIsWhiteListEnabled(true)).to.not.be
+    //     .reverted;
+    // });
+    // it("onlyOwner should be able to set whitelist", async function () {
+    //   await expect(vault.connect(self).setAddressInWhitelist(selfAddress, true))
+    //     .to.be.reverted;
 
-      await expect(
-        vault.connect(owner).setAddressInWhitelist(selfAddress, true)
-      ).to.be.not.reverted;
-    });
+    //   await expect(
+    //     vault.connect(owner).setAddressInWhitelist(selfAddress, true)
+    //   ).to.be.not.reverted;
+    // });
     it("Deposits outside of the staking window are kept liquid", async function () {
       await network.provider.send("evm_mine");
       const mason = await getMason(masons[0], Mason);

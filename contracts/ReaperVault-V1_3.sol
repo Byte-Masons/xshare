@@ -1087,11 +1087,11 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
 
     event NewStratCandidate(address implementation);
     event UpgradeStrat(address implementation);
-    event TermsAccepted(address user);;
+    event TermsAccepted(address user);
     event TvlCapUpdated(uint256 newTvlCap);
 
     event DepositsIncremented(address user, uint256 amount, uint256 total);
-    event WithdrawalsIncremented(address user, uint256 amount, uint256 total)
+    event WithdrawalsIncremented(address user, uint256 amount, uint256 total);
 
     /**
      * @dev Sets the value of {token} to the token that the vault will
