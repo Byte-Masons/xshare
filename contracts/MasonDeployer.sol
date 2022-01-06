@@ -24,7 +24,7 @@ contract MasonDeployer {
     }
 
     /**
-     * @dev Deploys a single mason and assigns it the Strategy as the only authorized party 
+     * @dev Deploys a single mason and assigns it the Strategy as the only authorized party
      */
     function deployMason() public returns (address) {
         address mason = address(new Mason(msg.sender));

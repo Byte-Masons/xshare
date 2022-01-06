@@ -1190,7 +1190,7 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
         require(_amount > 0, 'please provide amount');
         uint256 _pool = balance();
         require(_pool.add(_amount) <= tvlCap, 'vault is full!');
-        
+
         uint256 _before = token.balanceOf(address(this));
         token.safeTransferFrom(msg.sender, address(this), _amount);
         uint256 _after = token.balanceOf(address(this));
