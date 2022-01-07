@@ -131,14 +131,12 @@ describe("Vaults", function () {
   let TombTreasury;
   let TShare;
   let Mason;
-  let MasonDeployer;
   let vault;
   let strategy;
   let treasury;
   let tombTreasury;
   let tshare;
   let masons;
-  let masonDeployer;
   let stakedToken = ethers.utils.getAddress(pools.tomb.stake[i].token);
   const tombTreasuryAddress = ethers.utils.getAddress(
     pools.tomb.stake[i].treasury
@@ -192,7 +190,6 @@ describe("Vaults", function () {
     TombTreasury = await ethers.getContractFactory("Treasury");
     TShare = await ethers.getContractFactory("TShare");
     Mason = await ethers.getContractFactory("Mason");
-    MasonDeployer = await ethers.getContractFactory("MasonDeployer");
     console.log("artifacts");
 
     //deploy contracts
@@ -211,11 +208,8 @@ describe("Vaults", function () {
     );
     console.log("vault");
 
-    masonDeployer = await MasonDeployer.deploy();
-    console.log("masonDeployer");
-    strategy = await Strategy.deploy(vault.address, treasury.address, treasury.address, masonDeployer.address); //change last address to the strategy payment address
+    strategy = await Strategy.deploy(vault.address, treasury.address, treasury.address); //change last address to the strategy payment address
     await strategy.deployed();
-    await strategy.setMasons();
     console.log("strategy");
     console.log("deploying Masons");
 
@@ -241,7 +235,6 @@ describe("Vaults", function () {
     masons = await getMasonsAddresses();
     await vault.initialize(strategy.address);
 
-    console.log(`MasonDeployer deployed to ${masonDeployer.address}`);
     console.log(`Strategy deployed to ${strategy.address}`);
     console.log(`Vault deployed to ${vault.address}`);
     console.log(`Treasury deployed to ${treasury.address}`);

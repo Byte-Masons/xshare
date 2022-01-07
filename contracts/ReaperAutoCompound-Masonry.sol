@@ -296,58 +296,8 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
-interface IMasonry {
-    function stake(uint256 _amount) external;
-
-    function withdraw(uint256 _amount) external;
-
-    function claimReward() external;
-
-    function exit() external; //Could end up being useful if the masonry is deactivated, or other unexpected reasons
-
-    function balanceOf(address user) external view returns (uint256);
-
-    function canClaimReward(address user) external view returns (bool);
-
-    function canWithdraw(address user) external view returns (bool);
-
-    function earned(address user) external view returns (uint256);
-
-    function epoch() external view returns (uint256);
-}
-
-/**
- * @dev The IMason wraps the IMasonry but does not need the address user parameter
- */
-interface IMason {
-    function initialize(address _strategy) external;
-
-    function stake(uint256 _amount) external;
-
-    function withdraw(uint256 _amount) external;
-
-    function claimReward() external;
-
-    function exit() external; //Could end up being useful if the masonry is deactivated, or other unexpected reasons
-
-    function balanceOf() external view returns (uint256);
-
-    function canClaimReward() external view returns (bool);
-
-    function canWithdraw() external view returns (bool);
-
-    function earned() external view returns (uint256);
-
-    function epoch() external view returns (uint256);
-
-    function nextEpochPoint() external view returns (uint256);
-}
-
-interface IMasonDeployer {
-    function deployMasons(uint256 _total) external returns (address[] memory);
-}
-
 import './ReaperBaseStrategy.sol';
+import './Mason.sol';
 
 /**
  * @dev Implementation of a strategy to get yields from farming LP Pools in SpookySwap.
@@ -385,12 +335,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     address[] public masons;
 
     /**
-     * @dev Reaper Contracts:
-     * {masonDeployer} - Address of the contract creating masons and assigning the strategy as operator.
-     */
-    address immutable masonDeployer;
-
-    /**
      * @dev Routes we take to swap tokens using PanrewardTokenSwap.
      * {rewardTokenToWftmRoute} - Route we take to get from {rewardToken} into {wftm}.
      * {rewardTokenToStakedTokenRoute} - Route we take to get from {rewardToken} into {stakedToken}.
@@ -420,10 +364,11 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     constructor(
         address _vault,
         address _treasury,
-        address _strategist,
-        address _masonDeployer
+        address _strategist
     ) ReaperBaseStrategy(_vault, _treasury, _strategist) {
-        masonDeployer = _masonDeployer;
+        for (uint256 i; i < 6; i++) {
+            masons.push(address(new Mason(address(this))));
+        }
 
         _giveAllowances();
     }
@@ -471,7 +416,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * 5. It deposits the new LP tokens.
      */
     function _harvestCore() internal override whenNotPaused {
-        require(!stratHasBeenRetired,"retired");
+        require(!stratHasBeenRetired, 'retired');
         _checkNewEpoch();
         _retrieveTokensFromMason();
         _chargeFees();
@@ -618,13 +563,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         return uint8(IMasonry(masonry).epoch() % 6);
     }
 
-    /**
-     * @dev Set the masons that will interact with the masonry. Requires precisely 6 masons
-     */
-    function setMasons() external onlyOwner {
-        masons = IMasonDeployer(masonDeployer).deployMasons(6);
-    }
-
     function setDepositTimeFrame(uint256 _depositTimeFrame) external onlyOwner {
         require(_depositTimeFrame < 4 hours, 'depositTimeFrame too big');
         depositTimeFrame = _depositTimeFrame;
@@ -656,7 +594,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * @dev Allows to withdraw leftover funds from masons once the strat has been retired
      */
     function withdrawPostRetire() external onlyOwner {
-        require(stratHasBeenRetired,"!retired");
+        require(stratHasBeenRetired, '!retired');
         // Get tokens from masons that can withdraw
         for (uint8 i; i < masons.length; i++) {
             if (IMason(masons[i]).canWithdraw() && IMason(masons[i]).balanceOf() > 0) {
