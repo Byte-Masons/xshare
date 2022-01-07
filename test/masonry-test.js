@@ -213,7 +213,7 @@ describe("Vaults", function () {
 
     masonDeployer = await MasonDeployer.deploy();
     console.log("masonDeployer");
-    strategy = await Strategy.deploy(vault.address, treasury.address,masonDeployer.address);
+    strategy = await Strategy.deploy(vault.address, treasury.address, treasury.address, masonDeployer.address); //change last address to the strategy payment address
     await strategy.deployed();
     await strategy.setMasons();
     console.log("strategy");
