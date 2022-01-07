@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.8.0;
+pragma solidity ^0.8.0;
 
 import 'ozlatest/token/ERC20/ERC20.sol';
 import 'ozlatest/token/ERC20/utils/SafeERC20.sol';
@@ -347,8 +347,6 @@ interface IMasonDeployer {
     function deployMasons(uint256 _total) external returns (address[] memory);
 }
 
-pragma solidity ^0.8.0;
-
 import './ReaperBaseStrategy.sol';
 
 /**
@@ -388,11 +386,8 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
 
     /**
      * @dev Reaper Contracts:
-     * {treasury} - Address of the Reaper treasury
-     * {vault} - Address of the vault that controls the strategy's funds.
+     * {masonDeployer} - Address of the contract creating masons and assigning the strategy as operator.
      */
-    address public treasury;
-    address public vault;
     address immutable masonDeployer;
 
     /**
@@ -425,21 +420,12 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     constructor(
         address _vault,
         address _treasury,
+        address _strategist,
         address _masonDeployer
-    ) {
-        vault = _vault;
-        treasury = _treasury;
+    ) ReaperBaseStrategy(_vault, _treasury, _strategist) {
         masonDeployer = _masonDeployer;
 
         _giveAllowances();
-    }
-
-    /**
-     * @dev Throws if called by any account that is not the vault
-     */
-    modifier onlyVault() {
-        require(_msgSender() == vault, '!vault');
-        _;
     }
 
     /**
@@ -464,7 +450,8 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * It withdraws {stakedToken} from the masonry.
      * The available {stakedToken} minus fees is returned to the vault.
      */
-    function withdraw(uint256 _amount) external onlyVault {
+    function withdraw(uint256 _amount) external {
+        require(_msgSender() == vault, '!vault');
         _checkNewEpoch();
         require(balanceDuringCurrentEpoch() >= _amount, '_amount too great for the current strategy balance');
         _retrieveTokensFromMason();
@@ -539,7 +526,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     /**
      * @dev Takes out fees from the rewards. Set by constructor
      * callFeeToUser is set as a percentage of the fee,
-     * as is treasuryFeeToVault
+     * as is treasuryFeeToVault and strategistFee
      */
     function _chargeFees() internal {
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
@@ -556,10 +543,11 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
             uint256 wftmBal = IERC20(wftm).balanceOf(address(this));
 
             uint256 callFeeToUser = wftmBal.mul(callFee).div(PERCENT_DIVISOR);
-            IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
-
             uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(PERCENT_DIVISOR);
+            uint256 feeToStrategist = wftmBal.mul(treasuryFee).div(PERCENT_DIVISOR);
+            IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
             IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
+            IERC20(wftm).safeTransfer(treasury, feeToStrategist);
         }
     }
 
@@ -731,13 +719,5 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     function _removeAllowances() internal {
         IERC20(stakedToken).safeApprove(masonry, 0);
         IERC20(rewardToken).safeApprove(uniRouter, 0);
-    }
-
-    /**
-     * @dev Update the treasury
-     */
-    function updateTreasury(address newTreasury) external onlyOwner returns (bool) {
-        treasury = newTreasury;
-        return true;
     }
 }
