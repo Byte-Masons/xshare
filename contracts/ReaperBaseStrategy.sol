@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import 'ozlatest/access/Ownable.sol';
+import 'ozlatest/access/AccessControlEnumerable.sol';
 import 'ozlatest/security/Pausable.sol';
 import 'ozlatest/utils/Address.sol';
 import 'ozlatest/utils/math/SafeMath.sol';
 
-abstract contract ReaperBaseStrategy is Pausable, Ownable {
+abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
     using Address for address;
     using SafeMath for uint256;
 
@@ -26,14 +26,19 @@ abstract contract ReaperBaseStrategy is Pausable, Ownable {
     uint256 public lastHarvestTimestamp;
 
     /**
-     * @dev Reaper roles:
+     * Reaper Roles
+     */
+    bytes32 public constant STRATEGIST = keccak256('STRATEGIST');
+
+    /**
+     * @dev Reaper contracts:
      * {treasury} - Address of the Reaper treasury
      * {vault} - Address of the vault that controls the strategy's funds.
-     * {strategist} - Address of entity that designed and built the strategy.
+     * {strategistRemitter} - Address where strategist fee is remitted to.
      */
     address public treasury;
     address public immutable vault;
-    address public strategist;
+    address public strategistRemitter;
 
     /**
      * Fee related constants:
@@ -66,21 +71,26 @@ abstract contract ReaperBaseStrategy is Pausable, Ownable {
      * {TotalFeeUpdated} Event that is fired each time the total fee is updated.
      * {FeesUpdated} Event that is fired each time callFee+treasuryFee+strategistFee are updated.
      * {StratHarvest} Event that is fired each time the strategy gets harvested.
-     * {StrategistUpdated} Event that is fired each time the strategist role is updated.
+     * {StrategistRemitterUpdated} Event that is fired each time the strategistRemitter address is updated.
      */
     event TotalFeeUpdated(uint256 newFee);
     event FeesUpdated(uint256 newCallFee, uint256 newTreasuryFee, uint256 newStrategistFee);
     event StratHarvest(address indexed harvester);
-    event StrategistUpdated(address newStrategist);
+    event StrategistRemitterUpdated(address newStrategistRemitter);
 
     constructor(
         address _vault,
-        address _treasury,
-        address _strategist
+        address[] memory _feeRemitters,
+        address[] memory _strategists
     ) {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         vault = _vault;
-        treasury = _treasury;
-        strategist = _strategist;
+        treasury = _feeRemitters[0];
+        strategistRemitter = _feeRemitters[1];
+
+        for (uint256 i = 0; i < _strategists.length; i++) {
+            _grantRole(STRATEGIST, _strategists[i]);
+        }
     }
 
     /**
@@ -167,14 +177,18 @@ abstract contract ReaperBaseStrategy is Pausable, Ownable {
         return runningAPRSum.div(numLogsProcessed);
     }
 
-    function updateHarvestLogCadence(uint256 _newCadenceInSeconds) external onlyOwner {
+    /**
+     * @dev Only strategist or owner can edit the log cadence.
+     */
+    function updateHarvestLogCadence(uint256 _newCadenceInSeconds) external {
+        _onlyStrategistOrOwner();
         harvestLogCadence = _newCadenceInSeconds;
     }
 
     /**
-     * @dev updates the total fee, capped at 5%
+     * @dev updates the total fee, capped at 5%; only owner.
      */
-    function updateTotalFee(uint256 _totalFee) external onlyOwner returns (bool) {
+    function updateTotalFee(uint256 _totalFee) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         require(_totalFee <= MAX_FEE, 'Fee Too High');
         totalFee = _totalFee;
         emit TotalFeeUpdated(totalFee);
@@ -187,12 +201,14 @@ abstract contract ReaperBaseStrategy is Pausable, Ownable {
      *
      *      strategist fee is expressed as % of the treasury fee and
      *      must be no more than STRATEGIST_MAX_FEE
+     *
+     *      only owner
      */
     function updateFees(
         uint256 _callFee,
         uint256 _treasuryFee,
         uint256 _strategistFee
-    ) external onlyOwner returns (bool) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         require(_callFee.add(_treasuryFee) == PERCENT_DIVISOR, 'sum != PERCENT_DIVISOR');
         require(_strategistFee <= STRATEGIST_MAX_FEE, 'strategist fee > STRATEGIST_MAX_FEE');
 
@@ -203,27 +219,37 @@ abstract contract ReaperBaseStrategy is Pausable, Ownable {
         return true;
     }
 
-    function updateTreasury(address newTreasury) external onlyOwner returns (bool) {
+    /**
+     * @dev only owner can update treasury address.
+     */
+    function updateTreasury(address newTreasury) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         treasury = newTreasury;
         return true;
     }
 
     /**
-     * @dev Updates the current strategist.
-     *      This may only be called by owner or the existing strategist.
+     * @dev Updates the current strategistRemitter.
+     *      If there is only one strategist this function may be called by
+     *      the strategist or owner. However if there are multiple strategists
+     *      this function may only be called by the owner.
      */
-    function updateStrategist(address _newStrategist) external {
-        _onlyStrategistOrOwner();
-        require(_newStrategist != address(0), '!0');
-        strategist = _newStrategist;
-        emit StrategistUpdated(_newStrategist);
+    function updateStrategistRemitter(address _newStrategistRemitter) external {
+        if (getRoleMemberCount(STRATEGIST) == 1) {
+            _onlyStrategistOrOwner();
+        } else {
+            _checkRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        }
+
+        require(_newStrategistRemitter != address(0), '!0');
+        strategistRemitter = _newStrategistRemitter;
+        emit StrategistRemitterUpdated(_newStrategistRemitter);
     }
 
     /**
      * @dev Only allow access to strategist or owner
      */
     function _onlyStrategistOrOwner() internal view {
-        require(msg.sender == strategist || msg.sender == owner(), 'Not authorized');
+        require(hasRole(STRATEGIST, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), 'Not authorized');
     }
 
     /**

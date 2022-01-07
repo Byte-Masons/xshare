@@ -354,6 +354,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     bool tokensHaveBeenWithdrawn;
     uint8 lastWithdrawIndex;
     uint256 depositTimeFrame = 1 hours;
+    uint256 MAX_DEPOSIT_TIME_FRAME = 4 hours;
     bool sameBlockLock;
     bool stratHasBeenRetired;
 
@@ -363,9 +364,9 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      */
     constructor(
         address _vault,
-        address _treasury,
-        address _strategist
-    ) ReaperBaseStrategy(_vault, _treasury, _strategist) {
+        address[] memory _feeRemitters,
+        address[] memory _strategists
+    ) ReaperBaseStrategy(_vault, _feeRemitters, _strategists) {
         for (uint256 i; i < 6; i++) {
             masons.push(address(new Mason(address(this))));
         }
@@ -492,7 +493,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
             uint256 feeToStrategist = wftmBal.mul(treasuryFee).div(PERCENT_DIVISOR);
             IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
             IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
-            IERC20(wftm).safeTransfer(treasury, feeToStrategist);
+            IERC20(wftm).safeTransfer(strategistRemitter, feeToStrategist);
         }
     }
 
@@ -563,8 +564,9 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         return uint8(IMasonry(masonry).epoch() % 6);
     }
 
-    function setDepositTimeFrame(uint256 _depositTimeFrame) external onlyOwner {
-        require(_depositTimeFrame < 4 hours, 'depositTimeFrame too big');
+    function setDepositTimeFrame(uint256 _depositTimeFrame) external {
+        require(_depositTimeFrame < MAX_DEPOSIT_TIME_FRAME, 'depositTimeFrame too big');
+        _onlyStrategistOrOwner();
         depositTimeFrame = _depositTimeFrame;
     }
 
@@ -583,8 +585,10 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
 
     /**
      * @dev Pauses deposits. Withdraws all funds from the masonry for the current mason, leaving rewards behind
+     *      Can only be called by strategist or owner.
      */
-    function panic() public onlyOwner {
+    function panic() public {
+        _onlyStrategistOrOwner();
         pause();
         _checkNewEpoch();
         _retrieveTokensFromMason();
@@ -592,9 +596,11 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
 
     /**
      * @dev Allows to withdraw leftover funds from masons once the strat has been retired
+     *      Can only be called by strategist or owner
      */
-    function withdrawPostRetire() external onlyOwner {
+    function withdrawPostRetire() external {
         require(stratHasBeenRetired, '!retired');
+        _onlyStrategistOrOwner();
         // Get tokens from masons that can withdraw
         for (uint8 i; i < masons.length; i++) {
             if (IMason(masons[i]).canWithdraw() && IMason(masons[i]).balanceOf() > 0) {
@@ -625,17 +631,19 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     }
 
     /**
-     * @dev Pauses the strat.
+     * @dev Pauses the strat. Can only be called by strategist or owner.
      */
-    function pause() public onlyOwner {
+    function pause() public {
+        _onlyStrategistOrOwner();
         _pause();
         _removeAllowances();
     }
 
     /**
-     * @dev Unpauses the strat.
+     * @dev Unpauses the strat. Can only be called by strategist or owner.
      */
-    function unpause() external onlyOwner {
+    function unpause() external {
+        _onlyStrategistOrOwner();
         _unpause();
 
         _giveAllowances();
