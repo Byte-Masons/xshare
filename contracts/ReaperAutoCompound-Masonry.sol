@@ -471,7 +471,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * 5. It deposits the new LP tokens.
      */
     function _harvestCore() internal override whenNotPaused {
-        require(!Address.isContract(msg.sender), '!contract');
+        require(!stratHasBeenRetired,"retired");
         _checkNewEpoch();
         _retrieveTokensFromMason();
         _chargeFees();
@@ -656,7 +656,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * @dev Allows to withdraw leftover funds from masons once the strat has been retired
      */
     function withdrawPostRetire() external onlyOwner {
-        // Check that this is called post retire
+        require(stratHasBeenRetired,"!retired");
         // Get tokens from masons that can withdraw
         for (uint8 i; i < masons.length; i++) {
             if (IMason(masons[i]).canWithdraw() && IMason(masons[i]).balanceOf() > 0) {
