@@ -2,9 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
-import '@openzeppelin/contracts/security/Pausable.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
+import 'ozlatest/access/AccessControlEnumerable.sol';
+import 'ozlatest/security/Pausable.sol';
+import 'ozlatest/utils/Address.sol';
+import './interfaces/IPaymentRouter.sol';
 
 abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
     uint256 public constant PERCENT_DIVISOR = 10_000;
