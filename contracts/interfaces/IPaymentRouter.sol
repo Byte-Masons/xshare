@@ -15,19 +15,13 @@ interface IPaymentRouter {
 
     function getRoleAdmin(bytes32 role) external view returns (bytes32);
 
-    function getRoleMember(bytes32 role, uint256 index)
-        external
-        view
-        returns (address);
+    function getRoleMember(bytes32 role, uint256 index) external view returns (address);
 
     function getRoleMemberCount(bytes32 role) external view returns (uint256);
 
     function grantRole(bytes32 role, address account) external;
 
-    function hasRole(bytes32 role, address account)
-        external
-        view
-        returns (bool);
+    function hasRole(bytes32 role, address account) external view returns (bool);
 
     function release(address _token) external;
 
@@ -39,10 +33,7 @@ interface IPaymentRouter {
 
     function splitterForStrategy(address) external view returns (address);
 
-    function splittersForStrategist(address, uint256)
-        external
-        view
-        returns (address);
+    function splittersForStrategist(address, uint256) external view returns (address);
 
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
