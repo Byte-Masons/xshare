@@ -93,7 +93,7 @@ const moveForwardNEpochsHarvestEveryHour = async (
   epochAction
 ) => {
   const hour = 3600;
-  const epoch = 1 * hour;
+  const epoch = 6 * hour;
   console.log("moveForwardNEpochs");
   for (let index = 0; index < n * 6; index++) {
     await moveTimeForward(epoch);
@@ -128,12 +128,14 @@ describe("Vaults", function () {
   let Vault;
   let Strategy;
   let Treasury;
+  let PaymentRouter;
   let TombTreasury;
   let TShare;
   let Mason;
   let vault;
   let strategy;
   let treasury;
+  let paymentRouter;
   let tombTreasury;
   let tshare;
   let masons;
@@ -167,7 +169,7 @@ describe("Vaults", function () {
     console.log("providers");
     //get signers
     [owner, addr1, addr2, addr3, addr4, ...addrs] = await ethers.getSigners();
-    const tshareHolder = "0xe739b43f46e3efee99ff698123110b4da4657b2b";
+    const tshareHolder = "0x924E36660060CaD83Cc438D0E91B0fb00C35eDC6";// 0xe739b43f46e3efee99ff698123110b4da4657b2b
     const tshareWhaleAddress = "0x2ff023bb5bb52b43ba62b36c03ccdd82d90ae7c2";
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
@@ -187,6 +189,7 @@ describe("Vaults", function () {
     Strategy = await ethers.getContractFactory("ReaperAutoCompoundMasonry");
     Vault = await ethers.getContractFactory("ReaperVaultv1_3");
     Treasury = await ethers.getContractFactory("ReaperTreasury");
+    PaymentRouter = await ethers.getContractFactory("PaymentRouter");
     TombTreasury = await ethers.getContractFactory("Treasury");
     TShare = await ethers.getContractFactory("TShare");
     Mason = await ethers.getContractFactory("Mason");
@@ -329,17 +332,18 @@ describe("Vaults", function () {
       expect(selfShareBalance).to.equal(depositAmount);
     });
     it("should allow withdrawals", async function () {
-      const userBalance = await tshare.balanceOf(selfAddress);
+      const userBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       console.log(`userBalance: ${userBalance}`);
-      const depositAmount = ethers.utils.parseEther("0.0001");
+      const depositAmount = ethers.BigNumber.from(ethers.utils.parseEther("0.0001"));
       await vault.connect(self).deposit(depositAmount);
       console.log(
         `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
           selfAddress
         )}`
       );
-      const newUserBalance = userBalance - depositAmount;
-      const tokenBalance = await tshare.balanceOf(selfAddress);
+      const newUserBalance = userBalance.sub(depositAmount);
+      const tokenBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
+      console.log(`tokenBalance ${tokenBalance} == newUserBalance ${newUserBalance} ?`);
       expect(tokenBalance).to.equal(newUserBalance);
       await vault.connect(self).withdraw(depositAmount);
       console.log(
@@ -351,21 +355,21 @@ describe("Vaults", function () {
       const securityFee = 10;
       const percentDivisor = 10000;
       const withdrawFee = (depositAmount * securityFee) / percentDivisor;
-      expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
+      expect(userBalanceAfterWithdraw).to.equal(userBalance.sub(withdrawFee));
     });
     it("should be able to harvest", async function () {
       this.timeout(120000);
-      const userBalance = await tshare.balanceOf(selfAddress);
+      const userBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       console.log(`userBalance: ${userBalance}`);
-      const depositAmount = ethers.utils.parseEther("0.0001");
+      const depositAmount = ethers.BigNumber.from(ethers.utils.parseEther("0.0001"));
       await vault.connect(self).deposit(depositAmount);
       console.log(
         `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
           selfAddress
         )}`
       );
-      const newUserBalance = userBalance - depositAmount;
-      const tokenBalance = await tshare.balanceOf(selfAddress);
+      const newUserBalance = userBalance.sub(depositAmount);
+      const tokenBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       expect(tokenBalance).to.equal(newUserBalance);
       const harvest = async () => {
         await strategy.connect(self).harvest();
@@ -380,17 +384,17 @@ describe("Vaults", function () {
           selfAddress
         )}`
       );
-      const userBalanceAfterWithdraw = await tshare.balanceOf(selfAddress);
+      const userBalanceAfterWithdraw = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       const securityFee = 10;
       const percentDivisor = 10000;
       const withdrawFee = (depositAmount * securityFee) / percentDivisor;
-      expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
+      expect(userBalanceAfterWithdraw).to.equal(userBalance.sub(withdrawFee));
     });
     it("should provide yield", async function () {
       this.timeout(120000);
-      const userBalance = await tshare.balanceOf(selfAddress);
+      const userBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       console.log(`userBalance: ${userBalance}`);
-      const depositAmount = ethers.utils.parseEther("0.0001");
+      const depositAmount = ethers.BigNumber.from(ethers.utils.parseEther("0.0001"));
       await vault.connect(self).deposit(depositAmount);
       console.log(
         `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
@@ -428,8 +432,8 @@ describe("Vaults", function () {
         await moveTimeForward(2);
       };
       await whaleDeposit();
-      const newUserBalance = userBalance - depositAmount;
-      const tokenBalance = await tshare.balanceOf(selfAddress);
+      const newUserBalance = userBalance.sub(depositAmount);
+      const tokenBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       expect(tokenBalance).to.equal(newUserBalance);
       const fullEpochCycle = 6;
       const harvest = async () => {
@@ -458,6 +462,9 @@ describe("Vaults", function () {
       await moveTimeForward(2);
       console.log("Second Harvest");
       await strategy.connect(self).harvest();
+      await moveForwardToStake();
+      await moveTimeForward(3600);
+      await tombTreasury.allocateSeigniorage();
       console.log(`Trying to withdraw: ${depositAmount} against available: ${await strategy.balanceDuringCurrentEpoch()} while withdraw authorized: ${await strategy.canWithdrawFromMason()}`);
       await vault.connect(self).withdraw(depositAmount);
       console.log(
@@ -569,7 +576,7 @@ describe("Vaults", function () {
       const securityFee = 10;
       const percentDivisor = 10000;
       const withdrawFee = (depositAmount * securityFee) / percentDivisor;
-      expect(userBalanceAfterWithdraw).to.equal(userBalance - withdrawFee);
+      expect(userBalanceAfterWithdraw).to.equal(userBalance.sub(withdrawFee));
       // const depositAmount = 10000000;
       // const nrOfDeposits = 50;
       // const secondsToIncrease = 60 * 15;
