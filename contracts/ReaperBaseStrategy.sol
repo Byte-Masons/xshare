@@ -2,15 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import 'ozlatest/access/AccessControlEnumerable.sol';
-import 'ozlatest/security/Pausable.sol';
-import 'ozlatest/utils/Address.sol';
-import 'ozlatest/utils/math/SafeMath.sol';
+import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
+import '@openzeppelin/contracts/security/Pausable.sol';
+import '@openzeppelin/contracts/utils/Address.sol';
 
 abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
-    using Address for address;
-    using SafeMath for uint256;
-
     uint256 public constant PERCENT_DIVISOR = 10_000;
     uint256 public constant ONE_YEAR = 365 days;
 
@@ -29,12 +25,14 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
      * Reaper Roles
      */
     bytes32 public constant STRATEGIST = keccak256('STRATEGIST');
+    bytes32 public constant STRATEGIST_MULTISIG = keccak256('STRATEGIST_MULTISIG');
 
     /**
      * @dev Reaper contracts:
      * {treasury} - Address of the Reaper treasury
      * {vault} - Address of the vault that controls the strategy's funds.
      * {strategistRemitter} - Address where strategist fee is remitted to.
+     *                        Must be an IPaymentRouter contract.
      */
     address public treasury;
     address public immutable vault;
@@ -42,11 +40,11 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
 
     /**
      * Fee related constants:
-     * {MAX_FEE} - Maximum fee allowed by the strategy. Hard-capped at 5%.
+     * {MAX_FEE} - Maximum fee allowed by the strategy. Hard-capped at 10%.
      * {STRATEGIST_MAX_FEE} - Maximum strategist fee allowed by the strategy (as % of treasury fee).
      *                        Hard-capped at 50%
      */
-    uint256 public constant MAX_FEE = 500;
+    uint256 public constant MAX_FEE = 1000;
     uint256 public constant STRATEGIST_MAX_FEE = 5000;
 
     /**
@@ -84,6 +82,7 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
         address[] memory _strategists
     ) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+
         vault = _vault;
         treasury = _feeRemitters[0];
         strategistRemitter = _feeRemitters[1];
@@ -98,19 +97,21 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
      *      override _harvestCore() and implement their specific logic in it.
      */
     function harvest() external whenNotPaused {
-        Harvest memory logEntry;
-        logEntry.timestamp = block.timestamp;
-        logEntry.tvl = balanceOf();
-        logEntry.timeSinceLastHarvest = block.timestamp.sub(lastHarvestTimestamp);
+        uint256 startingTvl = balanceOf();
 
         _harvestCore();
 
-        logEntry.profit = balanceOf().sub(logEntry.tvl);
         if (
-            harvestLog.length == 0 ||
-            harvestLog[harvestLog.length - 1].timestamp.add(harvestLogCadence) <= logEntry.timestamp
+            harvestLog.length == 0 || block.timestamp >= harvestLog[harvestLog.length - 1].timestamp + harvestLogCadence
         ) {
-            harvestLog.push(logEntry);
+            harvestLog.push(
+                Harvest({
+                    timestamp: block.timestamp,
+                    profit: balanceOf() - startingTvl,
+                    tvl: startingTvl,
+                    timeSinceLastHarvest: block.timestamp - lastHarvestTimestamp
+                })
+            );
         }
 
         lastHarvestTimestamp = block.timestamp;
@@ -128,7 +129,7 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
         slice = new Harvest[](_n);
         uint256 sliceCounter = 0;
 
-        for (uint256 i = harvestLog.length.sub(_n); i < harvestLog.length; i++) {
+        for (uint256 i = harvestLog.length - _n; i < harvestLog.length; i++) {
             slice[sliceCounter++] = harvestLog[i];
         }
     }
@@ -146,13 +147,11 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
         uint256 numLogsProcessed;
 
         for (uint256 i = harvestLog.length - 1; i > 0 && harvestLog[i].timestamp >= _timestamp; i--) {
-            uint256 projectedYearlyProfit = harvestLog[i].profit.mul(ONE_YEAR).div(harvestLog[i].timeSinceLastHarvest);
-            runningAPRSum = runningAPRSum.add(projectedYearlyProfit.mul(PERCENT_DIVISOR).div(harvestLog[i].tvl));
-
+            runningAPRSum += _getAPRForLog(harvestLog[i]);
             numLogsProcessed++;
         }
 
-        return runningAPRSum.div(numLogsProcessed);
+        return runningAPRSum / numLogsProcessed;
     }
 
     /**
@@ -168,13 +167,11 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
         uint256 numLogsProcessed;
 
         for (uint256 i = harvestLog.length - 1; i > 0 && numLogsProcessed < _n; i--) {
-            uint256 projectedYearlyProfit = harvestLog[i].profit.mul(ONE_YEAR).div(harvestLog[i].timeSinceLastHarvest);
-            runningAPRSum = runningAPRSum.add(projectedYearlyProfit.mul(PERCENT_DIVISOR).div(harvestLog[i].tvl));
-
+            runningAPRSum += _getAPRForLog(harvestLog[i]);
             numLogsProcessed++;
         }
 
-        return runningAPRSum.div(numLogsProcessed);
+        return runningAPRSum / numLogsProcessed;
     }
 
     /**
@@ -209,7 +206,7 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
         uint256 _treasuryFee,
         uint256 _strategistFee
     ) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
-        require(_callFee.add(_treasuryFee) == PERCENT_DIVISOR, 'sum != PERCENT_DIVISOR');
+        require(_callFee + _treasuryFee == PERCENT_DIVISOR, 'sum != PERCENT_DIVISOR');
         require(_strategistFee <= STRATEGIST_MAX_FEE, 'strategist fee > STRATEGIST_MAX_FEE');
 
         callFee = _callFee;
@@ -230,14 +227,14 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
     /**
      * @dev Updates the current strategistRemitter.
      *      If there is only one strategist this function may be called by
-     *      the strategist or owner. However if there are multiple strategists
-     *      this function may only be called by the owner.
+     *      that strategist. However if there are multiple strategists
+     *      this function may only be called by the STRATEGIST_MULTISIG role.
      */
     function updateStrategistRemitter(address _newStrategistRemitter) external {
         if (getRoleMemberCount(STRATEGIST) == 1) {
-            _onlyStrategistOrOwner();
+            _checkRole(STRATEGIST, msg.sender);
         } else {
-            _checkRole(DEFAULT_ADMIN_ROLE, msg.sender);
+            _checkRole(STRATEGIST_MULTISIG, msg.sender);
         }
 
         require(_newStrategistRemitter != address(0), '!0');
@@ -250,6 +247,11 @@ abstract contract ReaperBaseStrategy is AccessControlEnumerable, Pausable {
      */
     function _onlyStrategistOrOwner() internal view {
         require(hasRole(STRATEGIST, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), 'Not authorized');
+    }
+
+    function _getAPRForLog(Harvest storage log) internal view returns (uint256) {
+        uint256 projectedYearlyProfit = (log.profit * ONE_YEAR) / log.timeSinceLastHarvest;
+        return (projectedYearlyProfit * PERCENT_DIVISOR) / log.tvl;
     }
 
     /**
