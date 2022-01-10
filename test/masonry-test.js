@@ -403,7 +403,7 @@ describe("Vaults", function () {
         await moveTimeForward(3600);
       }
       
-      const moveForwardAndStake = async () => {
+      const moveForwardToStake = async () => {
         let canStake = false;
         let res;
         while (!canStake) {
@@ -414,7 +414,7 @@ describe("Vaults", function () {
         }
       }
 
-      await moveForwardAndStake();
+      await moveForwardToStake();
       // await moveToStakingWindow();
 
       const whaleDeposit = async () => {
