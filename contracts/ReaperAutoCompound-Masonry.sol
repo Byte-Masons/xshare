@@ -311,7 +311,6 @@ import './Mason.sol';
  */
 contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     /**
      * @dev Tokens Used:
@@ -338,8 +337,8 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * {rewardTokenToWftmRoute} - Route we take to get from {rewardToken} into {wftm}.
      * {rewardTokenToStakedTokenRoute} - Route we take to get from {rewardToken} into {stakedToken}.
      */
-    address[] public  rewardTokenToWftmRoute = [rewardToken, wftm];
-    address[] public  rewardTokenToStakedTokenRoute = [rewardToken, wftm, stakedToken];
+    address[] public rewardTokenToWftmRoute = [rewardToken, wftm];
+    address[] public rewardTokenToStakedTokenRoute = [rewardToken, wftm, stakedToken];
 
     /**
      * @dev Variables used to prevent erronous interactions with the masonry
@@ -405,8 +404,8 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         _retrieveTokensFromMason();
         uint256 stakedTokenBal = IERC20(stakedToken).balanceOf(address(this));
         stakedTokenBal = stakedTokenBal > _amount ? _amount : stakedTokenBal;
-        uint256 withdrawFee = stakedTokenBal.mul(securityFee).div(PERCENT_DIVISOR);
-        IERC20(stakedToken).safeTransfer(vault, stakedTokenBal.sub(withdrawFee));
+        uint256 withdrawFee = (stakedTokenBal * securityFee) / PERCENT_DIVISOR;
+        IERC20(stakedToken).safeTransfer(vault, stakedTokenBal - withdrawFee);
         sameBlockLock = false;
     }
 
@@ -438,9 +437,9 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         uint256 reward = IMason(masons[_getCurrentMasonIndex()]).earned();
         uint256[] memory amountOutMin = IUniswapV2Router02(uniRouter).getAmountsOut(reward, rewardTokenToWftmRoute);
         profit = amountOutMin[1];
-        uint256 wftmFee = profit.mul(totalFee).div(PERCENT_DIVISOR);
-        callFeeToUser = wftmFee.mul(callFee).div(PERCENT_DIVISOR);
-        profit = profit.sub(wftmFee);
+        uint256 wftmFee = (profit * totalFee) / PERCENT_DIVISOR;
+        callFeeToUser = (wftmFee * callFee) / PERCENT_DIVISOR;
+        profit = profit - wftmFee;
     }
 
     /**
@@ -479,24 +478,24 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     function _chargeFees() internal {
         uint256 rewardTokenBal = IERC20(rewardToken).balanceOf(address(this));
         if (rewardTokenBal > 0 && totalFee != 0) {
-            uint256 toWftm = rewardTokenBal.mul(totalFee).div(PERCENT_DIVISOR);
+            uint256 toWftm = (rewardTokenBal * totalFee) / PERCENT_DIVISOR;
             IUniswapRouterETH(uniRouter).swapExactTokensForTokensSupportingFeeOnTransferTokens(
                 toWftm,
                 0,
                 rewardTokenToWftmRoute,
                 address(this),
-                block.timestamp.add(600)
+                block.timestamp + 600
             );
 
             uint256 wftmBal = IERC20(wftm).balanceOf(address(this));
 
-            uint256 callFeeToUser = wftmBal.mul(callFee).div(PERCENT_DIVISOR);
-            uint256 treasuryFeeToVault = wftmBal.mul(treasuryFee).div(PERCENT_DIVISOR);
-            uint256 feeToStrategist = treasuryFeeToVault.mul(strategistFee).div(PERCENT_DIVISOR);
-            treasuryFeeToVault = treasuryFeeToVault.sub(feeToStrategist);
+            uint256 callFeeToUser = (wftmBal * callFee) / PERCENT_DIVISOR;
+            uint256 treasuryFeeToVault = (wftmBal * treasuryFee) / PERCENT_DIVISOR;
+            uint256 feeToStrategist = (treasuryFeeToVault * strategistFee) / PERCENT_DIVISOR;
+            treasuryFeeToVault = treasuryFeeToVault - feeToStrategist;
             IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
             IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
-            IERC20(wftm).safeTransfer(strategistRemitter, feeToStrategist);
+            IPaymentRouter(strategistRemitter).routePayment(wftm, feeToStrategist);
         }
     }
 
@@ -511,7 +510,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
                 0,
                 rewardTokenToStakedTokenRoute,
                 address(this),
-                block.timestamp.add(600)
+                block.timestamp + 600
             );
         }
     }
@@ -521,7 +520,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * It takes into account both the funds in hand, as the funds allocated in the masonry.
      */
     function balanceOf() public view override returns (uint256) {
-        return balanceOfStakedToken().add(balanceOfPool());
+        return balanceOfStakedToken() + balanceOfPool();
     }
 
     /**
@@ -538,7 +537,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         uint256 totalPoolBalance = 0;
         for (uint256 i = 0; i < masons.length; i++) {
             address mason = masons[i];
-            totalPoolBalance = totalPoolBalance.add(IMason(mason).balanceOf());
+            totalPoolBalance = totalPoolBalance + IMason(mason).balanceOf();
         }
         return totalPoolBalance;
     }
@@ -548,7 +547,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      */
     function balanceDuringCurrentEpoch() public view returns (uint256) {
         uint256 balance = IMason(masons[_getCurrentMasonIndex()]).canWithdraw()
-            ? balanceOfStakedToken().add(IMason(masons[_getCurrentMasonIndex()]).balanceOf())
+            ? balanceOfStakedToken() + IMason(masons[_getCurrentMasonIndex()]).balanceOf()
             : balanceOfStakedToken();
         return balance;
     }
@@ -660,6 +659,9 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     function _giveAllowances() internal {
         IERC20(rewardToken).safeApprove(uniRouter, 0);
         IERC20(rewardToken).safeApprove(uniRouter, type(uint256).max);
+
+        IERC20(stakedToken).safeApprove(strategistRemitter, 0);
+        IERC20(stakedToken).safeApprove(strategistRemitter, type(uint256).max);
     }
 
     /**
