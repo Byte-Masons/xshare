@@ -3,14 +3,15 @@ const pools = require("../pools.json");
 async function deployVault(timelock, depositFee) {
   console.log("deploying vault");
   const i = 0;
-  const Vault = await ethers.getContractFactory("ReaperVaultv1_2");
+  const Vault = await ethers.getContractFactory("ReaperVaultv1_3");
   const vaultName = pools.tomb.stake[i].name;
   const vault = await Vault.deploy(
     pools.tomb.stake[i].token,
     vaultName,
     pools.tomb.stake[i].symbol,
     timelock,
-    depositFee
+    depositFee,
+    ethers.utils.parseEther("1")
   );
   await vault.deployed();
   console.log(`Vault ${vaultName} deployed to ${vault.address}`);
@@ -25,16 +26,14 @@ const deployMasonDeployer = async () => {
   return masonDeployer;
 }
 
-async function deployStrategy(vaultAddress, treasuryAddress, masonDeployerAddress) {
+async function deployStrategy(vaultAddress, feeRemitterAddresses, strategistsAddresses) {
   const Strategy = await ethers.getContractFactory("ReaperAutoCompoundMasonry");
   console.log("vaultAddress: ",vaultAddress);
-  console.log("treasuryAddress address: ",treasuryAddress);
-  console.log("masonDeployerAddress: ",masonDeployerAddress);
-  const strategy = await Strategy.deploy(vaultAddress, treasuryAddress, masonDeployerAddress);
+  console.log("feeRemitterAddresses address: ",feeRemitterAddresses);
+  console.log("strategistsAddresses: ",strategistsAddresses);
+  const strategy = await Strategy.deploy(vaultAddress, feeRemitterAddresses, strategistsAddresses);
   await strategy.deployed();
   console.log(`Strategy deployed to ${strategy.address}`);
-  const strategySetMasonsTx = await strategy.setMasons();
-  sleep(30000);
   console.log(`Masons set`);
   return strategy;
 }
@@ -63,7 +62,7 @@ const getMasonsAddress = async (strategy) => {
 // }
 
 async function initializeVault(vaultAddress, strategyAddress) {
-  const Vault = await ethers.getContractFactory("ReaperVaultv1_2");
+  const Vault = await ethers.getContractFactory("ReaperVaultv1_3");
   const vault = Vault.attach(vaultAddress);
   const tx = await vault.initialize(strategyAddress);
   const receipt = await tx.wait();
@@ -92,13 +91,13 @@ module.exports = {
 async function main() {
   const vault = await deployVault(432000, 0);
   const vaultAddress = vault.address;
-  const treasury = "0x0e7c5313E9BB80b654734d9b7aB1FB01468deE3b";
-  const masonDeployer = await deployMasonDeployer();
-  const strategy = await deployStrategy(vaultAddress, treasury, masonDeployer.address);
+  const treasuryAddress = "0x0e7c5313E9BB80b654734d9b7aB1FB01468deE3b";
+  const paymentRouterAddress = "0x603e60d22af05ff77fdcf05c063f582c40e55aae";
+  const PaymentRouter = await ethers.getContractFactory("PaymentRouter");
+  const paymentRouter = await PaymentRouter;
+  const strategy = await deployStrategy(vaultAddress, [treasuryAddress, paymentRouterAddress], ["0x1E71AEE6081f62053123140aacC7a06021D77348","0x81876677843D00a7D792E1617459aC2E93202576"]);
   const strategyAddress = strategy.address;
   const masonsAddress = await getMasonsAddress(strategy);
-  // await strategy.setMasons(masonsAddress);
-  // console.log("set masons");
   await initializeVault(vaultAddress, strategyAddress);
 }
 
