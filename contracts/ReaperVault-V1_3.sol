@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import "./interfaces/IStrategy.sol";
-import "ozlatest/access/Ownable.sol";
-import "ozlatest/security/ReentrancyGuard.sol";
-import "ozlatest/token/ERC20/ERC20.sol";
-import "ozlatest/token/ERC20/utils/SafeERC20.sol";
+import './interfaces/IStrategy.sol';
+import 'ozlatest/access/Ownable.sol';
+import 'ozlatest/security/ReentrancyGuard.sol';
+import 'ozlatest/token/ERC20/ERC20.sol';
+import 'ozlatest/token/ERC20/utils/SafeERC20.sol';
 
 /**
  * @dev Implementation of a vault to deposit funds for yield optimizing.
@@ -110,11 +110,8 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
      */
 
     function initialize(address _strategy) public onlyOwner returns (bool) {
-        require(!initialized, "Contract is already initialized.");
-        require(
-            block.timestamp <= (constructionTime + 1200),
-            "initialization period over, use timelock"
-        );
+        require(!initialized, 'Contract is already initialized.');
+        require(block.timestamp <= (constructionTime + 1200), 'initialization period over, use timelock');
         strategy = _strategy;
         initialized = true;
         return true;
@@ -126,10 +123,7 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
      */
 
     function agreeToTerms() public returns (bool) {
-        require(
-            !hasReadAndAcceptedTerms[msg.sender],
-            "you have already accepted the terms"
-        );
+        require(!hasReadAndAcceptedTerms[msg.sender], 'you have already accepted the terms');
         hasReadAndAcceptedTerms[msg.sender] = true;
         emit TermsAccepted(msg.sender);
         return true;
@@ -178,16 +172,15 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
      * it's set to true
      */
     function deposit(uint256 _amount) public nonReentrant {
-        require(_amount != 0, "please provide amount");
+        require(_amount != 0, 'please provide amount');
         uint256 _pool = balance();
-        require(_pool + _amount <= tvlCap, "vault is full!");
+        require(_pool + _amount <= tvlCap, 'vault is full!');
 
         uint256 _before = token.balanceOf(address(this));
         token.safeTransferFrom(msg.sender, address(this), _amount);
         uint256 _after = token.balanceOf(address(this));
         _amount = _after - _before;
-        uint256 _amountAfterDeposit = (_amount *
-            (PERCENT_DIVISOR - depositFee)) / PERCENT_DIVISOR;
+        uint256 _amountAfterDeposit = (_amount * (PERCENT_DIVISOR - depositFee)) / PERCENT_DIVISOR;
         uint256 shares = 0;
         if (totalSupply() == 0) {
             shares = _amountAfterDeposit;
@@ -222,7 +215,7 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
      * tokens are burned in the process.
      */
     function withdraw(uint256 _shares) public nonReentrant {
-        require(_shares > 0, "please provide amount");
+        require(_shares > 0, 'please provide amount');
         uint256 r = (balance() * _shares) / totalSupply();
         _burn(msg.sender, _shares);
 
@@ -245,10 +238,7 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
      * @param _implementation The address of the candidate strategy.
      */
     function proposeStrat(address _implementation) public onlyOwner {
-        stratCandidate = StratCandidate({
-            implementation: _implementation,
-            proposedTime: block.timestamp
-        });
+        stratCandidate = StratCandidate({ implementation: _implementation, proposedTime: block.timestamp });
         emit NewStratCandidate(_implementation);
     }
 
@@ -278,14 +268,8 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
      */
 
     function upgradeStrat() public onlyOwner {
-        require(
-            stratCandidate.implementation != address(0),
-            "There is no candidate"
-        );
-        require(
-            stratCandidate.proposedTime + approvalDelay < block.timestamp,
-            "Delay has not passed"
-        );
+        require(stratCandidate.implementation != address(0), 'There is no candidate');
+        require(stratCandidate.proposedTime + approvalDelay < block.timestamp, 'Delay has not passed');
 
         emit UpgradeStrat(stratCandidate.implementation);
 
@@ -323,7 +307,7 @@ contract ReaperVaultv1_3 is ERC20, Ownable, ReentrancyGuard {
      * @param _token address of the token to rescue.
      */
     function inCaseTokensGetStuck(address _token) external onlyOwner {
-        require(_token != address(token), "!token");
+        require(_token != address(token), '!token');
 
         uint256 amount = IERC20(_token).balanceOf(address(this));
         IERC20(_token).safeTransfer(msg.sender, amount);
