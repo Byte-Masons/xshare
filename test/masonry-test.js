@@ -162,6 +162,7 @@ describe("Vaults", function () {
         {
           forking: {
             jsonRpcUrl: "https://rpc.ftm.tools/",
+            blockNumber: 27647244
           },
         },
       ],
@@ -335,6 +336,12 @@ describe("Vaults", function () {
       const userBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       console.log(`userBalance: ${userBalance}`);
       const depositAmount = ethers.BigNumber.from(ethers.utils.parseEther("0.0001"));
+      const mason = await getMason(masons[0], Mason);
+      const epochBefore = await mason.epoch();
+      console.log(`epochBefore: ${epochBefore}`);
+      await moveToStartOfEpoch(mason, tombTreasury);
+      const epochAfter = await mason.epoch();
+      console.log(`epochAfter: ${epochAfter}`);
       await vault.connect(self).deposit(depositAmount);
       console.log(
         `await tshare.balanceOf(selfAddress): ${await tshare.balanceOf(
@@ -576,6 +583,9 @@ describe("Vaults", function () {
       const securityFee = 10;
       const percentDivisor = 10000;
       const withdrawFee = (depositAmount * securityFee) / percentDivisor;
+      console.log(`userBalanceAfterWithdraw: ${userBalanceAfterWithdraw}`);
+      console.log(`userBalance: ${userBalance}`);
+      console.log(`withdrawFee: ${withdrawFee}`);
       expect(userBalanceAfterWithdraw).to.equal(userBalance.sub(withdrawFee));
       // const depositAmount = 10000000;
       // const nrOfDeposits = 50;
