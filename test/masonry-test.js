@@ -574,6 +574,7 @@ describe("Vaults", function () {
     it("Should be able to withdraw in another epoch", async function () {
       this.timeout(120000);
       await network.provider.send("evm_mine");
+      const userBalance = await tshare.balanceOf(selfAddress);
       const mason = await getMason(masons[0], Mason);
       const epochBefore = await mason.epoch();
       console.log(`epochBefore: ${epochBefore}`);
@@ -583,7 +584,6 @@ describe("Vaults", function () {
       await moveToStartOfEpoch(mason, tombTreasury);
       const whaleDepositAmount = 20000;
       await vault.connect(tshareWhale).deposit(whaleDepositAmount);
-      const userBalance = await tshare.balanceOf(selfAddress);
       await vault.connect(self).withdraw(depositAmount);
       const userBalanceAfterWithdraw = await tshare.balanceOf(selfAddress);
       const securityFee = 10;

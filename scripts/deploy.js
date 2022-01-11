@@ -95,12 +95,14 @@ async function main() {
   const paymentRouterAddress = '0x603e60d22af05ff77fdcf05c063f582c40e55aae';
   const strategist1 = '0x1E71AEE6081f62053123140aacC7a06021D77348';
   const strategist2 = '0x81876677843D00a7D792E1617459aC2E93202576';
-  const strategistAddress = [strategist1, strategist2];
-  const strategy = await deployStrategy(vaultAddress, [treasuryAddress, paymentRouterAddress], strategistAddress);
+  const strategistAddresses = [strategist1, strategist2];
+  const strategy = await deployStrategy(vaultAddress, [treasuryAddress, paymentRouterAddress], strategistAddresses);
   const strategyAddress = strategy.address;
   const PaymentRouter = await ethers.getContractFactory('PaymentRouter');
   const paymentRouter = PaymentRouter.attach(paymentRouterAddress);
-  await paymentRouter.addStrategy(strategy.address, strategistAddress, [5000, 5000]);
+  // console.log(await ethers.getSigner());
+  // console.log(await paymentRouter.hasRole("0xb17d0a42cc710456bf9c3efb785dcd0cb93a0ac358113307b5c64b285b516b5c","0x1E71AEE6081f62053123140aacC7a06021D77348"));
+  await paymentRouter.addStrategy(strategy.address, strategistAddresses, [5000, 5000]);
   await initializeVault(vaultAddress, strategyAddress);
 }
 

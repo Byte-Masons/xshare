@@ -1,6 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 
-const { devAccount } = require("./secrets.json");
+const { devAccount, strategistAccount } = require("./secrets.json");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -24,7 +24,7 @@ module.exports = {
     hardhat: {
       forking: {
         url: "https://rpc.ftm.tools/",
-        accounts: [devAccount],
+        accounts: [strategistAccount],
       },
       mining: {
         auto: true,
@@ -33,7 +33,7 @@ module.exports = {
     },
     opera: {
       url: "https://rpc.ftm.tools/",
-      accounts: [devAccount],
+      accounts: [strategistAccount],
     },
   },
   solidity: {
