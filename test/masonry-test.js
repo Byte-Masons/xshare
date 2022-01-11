@@ -366,6 +366,12 @@ describe("Vaults", function () {
     });
     it("should be able to harvest", async function () {
       this.timeout(120000);
+      const mason = await getMason(masons[0], Mason);
+      const epochBefore = await mason.epoch();
+      console.log(`epochBefore: ${epochBefore}`);
+      await moveToStartOfEpoch(mason, tombTreasury);
+      const epochAfter = await mason.epoch();
+      console.log(`epochAfter: ${epochAfter}`);
       const userBalance = ethers.BigNumber.from(await tshare.balanceOf(selfAddress));
       console.log(`userBalance: ${userBalance}`);
       const depositAmount = ethers.BigNumber.from(ethers.utils.parseEther("0.0001"));
