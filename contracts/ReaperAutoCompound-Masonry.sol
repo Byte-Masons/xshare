@@ -553,6 +553,29 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     }
 
     /**
+     * View function to query the current epoch's metadata for UX purposes.
+     * It returns tuple with three uints, that are as follows:
+     * - time in seconds until the next epoch (timeToNextEpoch)
+     * - amount of TShares left that are available to withdraw in the current epoch (currentEpochWithdrawableTShares)
+     * - time in seconds until the current epoch closes for withdrawals (currentEpochOpenWindowRemaining)
+     */
+    function currentEpochMetadata()
+        external
+        view
+        returns (
+            uint256 timeToNextEpoch,
+            uint256 currentEpochWithdrawableTShares,
+            uint256 currentEpochOpenWindowRemaining
+        )
+    {
+        timeToNextEpoch = IMason(masons[_getCurrentMasonIndex()]).nextEpochPoint() - block.timestamp;
+        currentEpochWithdrawableTShares = balanceDuringCurrentEpoch();
+        if (timeToNextEpoch >= depositTimeFrame) {
+            currentEpochOpenWindowRemaining = timeToNextEpoch - depositTimeFrame;
+        }
+    }
+
+    /**
      * @dev Indicates if the funds can be withdrawn from mason
      */
     function canWithdrawFromMason() external view returns (bool) {
