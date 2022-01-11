@@ -495,6 +495,8 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
             treasuryFeeToVault = treasuryFeeToVault - feeToStrategist;
             IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
             IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
+            IERC20(wftm).safeApprove(strategistRemitter, 0);
+            IERC20(wftm).safeApprove(strategistRemitter, type(uint256).max);
             IPaymentRouter(strategistRemitter).routePayment(wftm, feeToStrategist);
         }
     }
@@ -682,9 +684,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     function _giveAllowances() internal {
         IERC20(rewardToken).safeApprove(uniRouter, 0);
         IERC20(rewardToken).safeApprove(uniRouter, type(uint256).max);
-
-        IERC20(stakedToken).safeApprove(strategistRemitter, 0);
-        IERC20(stakedToken).safeApprove(strategistRemitter, type(uint256).max);
     }
 
     /**

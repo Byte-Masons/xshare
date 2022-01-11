@@ -102,8 +102,8 @@ async function main() {
   const paymentRouter = PaymentRouter.attach(paymentRouterAddress);
   // console.log(await ethers.getSigner());
   // console.log(await paymentRouter.hasRole("0xb17d0a42cc710456bf9c3efb785dcd0cb93a0ac358113307b5c64b285b516b5c","0x1E71AEE6081f62053123140aacC7a06021D77348"));
-  await paymentRouter.addStrategy(strategy.address, strategistAddresses, [5000, 5000]);
-  await initializeVault(vaultAddress, strategyAddress);
+  // await paymentRouter.addStrategy(strategy.address, strategistAddresses, [5000, 5000]);
+  // await initializeVault(vaultAddress, strategyAddress);
 }
 
 main()
