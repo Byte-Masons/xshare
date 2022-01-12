@@ -496,7 +496,7 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
             IERC20(wftm).safeTransfer(msg.sender, callFeeToUser);
             IERC20(wftm).safeTransfer(treasury, treasuryFeeToVault);
             IERC20(wftm).safeApprove(strategistRemitter, 0);
-            IERC20(wftm).safeApprove(strategistRemitter, type(uint256).max);
+            IERC20(wftm).safeApprove(strategistRemitter, feeToStrategist);
             IPaymentRouter(strategistRemitter).routePayment(wftm, feeToStrategist);
         }
     }

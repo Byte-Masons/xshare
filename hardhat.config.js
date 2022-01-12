@@ -1,6 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 
-const { devAccount, strategistAccount } = require("./secrets.json");
+const { devAccount, strategistAccount, ftmScanApiKey } = require("./secrets.json");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -88,4 +89,7 @@ module.exports = {
   mocha: {
     timeout: 2000000,
   },
+  etherscan: {
+    apiKey: ftmScanApiKey,
+  }
 };
