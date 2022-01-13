@@ -348,7 +348,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
      * {depositTimeFrame} - Duration during which deposits will stake into the masonry before the end of an epoch
      * {MAX_DEPOSIT_TIME_FRAME} - Maximum duration for the depositTimeFrame
      * {MASON_QUANTITY} - Number of masons managed by the strat. 36 hours / 6 epochs => 6 masons
-     * {sameBlockLock} - Lock necessary to prevent withdrawing and staking in the masonry in the same block, triggering its reentrancy guard
      * {stratHasBeenRetired} - Flag to help emptying strategy funds
      */
     bool tokensHaveBeenWithdrawn;
@@ -356,7 +355,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
     uint256 depositTimeFrame = 1 hours;
     uint256 MAX_DEPOSIT_TIME_FRAME = 4 hours;
     uint256 MASON_QUANTITY = 6;
-    bool sameBlockLock;
     bool stratHasBeenRetired;
 
     /**
@@ -406,7 +404,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         stakedTokenBal = stakedTokenBal > _amount ? _amount : stakedTokenBal;
         uint256 withdrawFee = (stakedTokenBal * securityFee) / PERCENT_DIVISOR;
         IERC20(stakedToken).safeTransfer(vault, stakedTokenBal - withdrawFee);
-        sameBlockLock = false;
     }
 
     /**
@@ -423,10 +420,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
         _retrieveTokensFromMason();
         _chargeFees();
         _addLiquidity();
-        if (!sameBlockLock) {
-            deposit();
-        }
-        sameBlockLock = false;
     }
 
     /**
@@ -461,7 +454,6 @@ contract ReaperAutoCompoundMasonry is ReaperBaseStrategy {
             address currentMason = masons[_getCurrentMasonIndex()];
 
             if (IMason(currentMason).balanceOf() > 0) {
-                sameBlockLock = true;
                 IMason(currentMason).exit();
             }
             _pullFromMason(currentMason);
