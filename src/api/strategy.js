@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { getContract } from "./common";
 const strategyABI = require("../abi/ReaperAutoCompound-Masonry.json");
-const strategyAddress = "0x15A7b695f4670962abd000B33502734f9a899679";
+const strategyAddress = "0x8fF7C300ed517503B2d05F16b5a9DAF5129bCE97";
 let strategyContract = null;
 
 const getStrategyContract = () => {
@@ -21,9 +21,9 @@ export const getMasons = async () => {
   return masons;
 };
 
-export const getCanWithdraw = async () => {
+export const getCanWithdrawFromMason = async () => {
   const contract = getStrategyContract();
-  return await contract.canWithdraw();
+  return await contract.canWithdrawFromMason();
 };
 
 export const getBalanceOfStakedToken = async () => {

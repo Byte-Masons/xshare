@@ -3,7 +3,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { getBlockTimestamp } from "../api/blockchain";
-import { harvest, getCanWithdraw, getBalanceOfStakedToken, getBalanceOf } from "../api/strategy";
+import { harvest, getCanWithdrawFromMason, getBalanceOfStakedToken, getBalanceOf } from "../api/strategy";
 import { allocateSeigniorage, getEpoch, getNextEpochPoint } from "../api/tomb";
 import {
   getVaultBalance,
@@ -41,7 +41,7 @@ export default function Admin({}) {
       const nextEpochPoint = Number(await getNextEpochPoint());
       const vaultBalance = Number(await getVaultBalance());
       const availableVaultBalance = Number(await getAvailableVaultBalance());
-      const canWithdraw = await getCanWithdraw();
+      const canWithdrawFromMason = await getCanWithdrawFromMason();
       const balanceOfStakedToken = await getBalanceOfStakedToken();
       const balanceOf = await getBalanceOf();
       setState({
@@ -51,7 +51,7 @@ export default function Admin({}) {
         nextEpochPoint,
         vaultBalance,
         availableVaultBalance,
-        canWithdraw,
+        canWithdrawFromMason,
         balanceOfStakedToken,
         balanceOf,
       });
