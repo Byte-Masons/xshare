@@ -1,5 +1,4 @@
 require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-etherscan");
 
 const { devAccount, strategistAccount, ftmScanApiKey } = require("./secrets.json");
 
